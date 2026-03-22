@@ -1,0 +1,13 @@
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+nbactions.xml
+nb-configuration.xml
+/build/
+*.class
+*.war
+/target/
+.DS_Store
+Thumbs.db
+.env

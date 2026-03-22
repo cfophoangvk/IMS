@@ -1,0 +1,5 @@
+Các thư viện sử dụng:
+jakarta.servlet.jsp.jstl-2.0.0
+jakarta.servlet.jsp.jstl-api-2.0.0
+mssql-jdbc-13.2.0.jre11
+jbcrypt-0.4
