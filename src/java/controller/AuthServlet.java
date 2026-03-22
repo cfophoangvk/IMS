@@ -64,12 +64,12 @@ public class AuthServlet extends HttpServlet {
 
     private void handleShowChangePasswordForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email").trim();
-        
+
         if (email == null) {
             request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
             return;
         }
-        
+
         request.setAttribute("email", email);
         request.getRequestDispatcher("/views/auth/change-password.jsp").forward(request, response);
     }
@@ -84,14 +84,14 @@ public class AuthServlet extends HttpServlet {
 
         UserDAO userDAO = new UserDAO();
         User user = userDAO.getUserByUsername(username);
-        
-        if (!user.isStatus()) {
-            request.setAttribute("error", "Tài khoản của bạn đã bị khóa. Liên hệ với IT để được hỗ trợ.");
-            request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
-            return;
-        }
 
         if (user != null && BCrypt.checkpw(password, user.getPasswordHash())) {
+            if (!user.isStatus()) {
+                request.setAttribute("error", "Tài khoản của bạn đã bị khóa. Liên hệ với IT để được hỗ trợ.");
+                request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
+                return;
+            }
+
             HttpSession session = request.getSession();
             session.setAttribute(Constant.SESSION_ACCOUNT, user);
 
@@ -138,7 +138,7 @@ public class AuthServlet extends HttpServlet {
         String email = request.getParameter("email").trim();
         String newPassword = request.getParameter("newPassword").trim();
         String confirmPassword = request.getParameter("confirmPassword").trim();
-        
+
         request.setAttribute("email", email); // Nếu có lỗi thì vẫn giữ nguyên email.
 
         if (!email.equals(loggedUser.getEmail())) {
@@ -166,8 +166,7 @@ public class AuthServlet extends HttpServlet {
             loggedUser.setFirstLogin(false);
             loggedUser.setPasswordHash(hash);
             session.setAttribute(Constant.SESSION_ACCOUNT, loggedUser);
-
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            response.sendRedirect(request.getContextPath() + "/auth/login");
         } else {
             request.setAttribute("error", "Đã xảy ra lỗi khi đổi mật khẩu.");
             request.getRequestDispatcher("/views/auth/change-password.jsp").forward(request, response);
@@ -185,7 +184,7 @@ public class AuthServlet extends HttpServlet {
         String usernameEmail = request.getParameter("usernameEmail").trim();
         String password = request.getParameter("password").trim();
         String confirmPassword = request.getParameter("confirmPassword").trim();
-        
+
         if (!password.equals(confirmPassword)) {
             request.setAttribute("error", "Mật khẩu xác nhận không khớp!");
             request.getRequestDispatcher("/views/auth/reset-password.jsp").forward(request, response);
@@ -198,9 +197,9 @@ public class AuthServlet extends HttpServlet {
             request.getRequestDispatcher("/views/auth/reset-password.jsp").forward(request, response);
             return;
         }
-        
+
         String hash = BCrypt.hashpw(password, BCrypt.gensalt());
-        
+
         if (dao.changePassword(user.getEmail(), hash)) {
             user.setPasswordHash(hash);
             session.setAttribute(Constant.SESSION_ACCOUNT, user);
@@ -210,7 +209,7 @@ public class AuthServlet extends HttpServlet {
             request.getRequestDispatcher("/views/auth/change-password.jsp").forward(request, response);
         }
         request.setAttribute("success", "Mật khẩu đã được khôi phục. Vui lòng đăng nhập lại!");
-        
+
         request.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp").forward(request, response);
     }
 }

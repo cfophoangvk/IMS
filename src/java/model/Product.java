@@ -6,6 +6,7 @@ public class Product extends BaseModel {
     private String productCode;
     private String productName;
     private int categoryId;
+    private String categoryName;
     private String unit;
 
     public Product() {
@@ -49,5 +50,13 @@ public class Product extends BaseModel {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }

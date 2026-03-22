@@ -1,6 +1,7 @@
 package util;
 
 public class Constant {
+
     public static final String SESSION_ACCOUNT = "account";
     public static final String DEFAULT_PASSWORD = "12345678Aa@";
 
@@ -16,6 +17,10 @@ public class Constant {
     public static final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     public static final String USERNAME_PATTERN = "^[a-zA-Z0-9_]{3,50}$";
     public static final String WAREHOUSE_CODE_PATTERN = "^[A-Za-z0-9\\-_]{1,20}$";
+    public static final String PRODUCT_CODE_PATTERN = "^[A-Za-z0-9\\-]{1,50}$";
+
+    public static final int[] PRODUCT_VIEWER_ROLES = {ROLE_SYSTEM_ADMIN, ROLE_EMPLOYEE, ROLE_MANAGER, ROLE_BUSINESS_OWNER};
+    public static final int[] PRODUCT_EDITOR_ROLES = {ROLE_SYSTEM_ADMIN, ROLE_MANAGER};
     /*
         PASSWORD_PATTERN:
         (?=.*[0-9]): Phải chứa ít nhất một chữ số (0-9).
@@ -29,5 +34,5 @@ public class Constant {
 
         EMAIL_PATTERN:
         Kiểm tra định dạng email cơ bản.
-    */
+     */
 }

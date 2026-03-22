@@ -57,4 +57,28 @@ public class Validator {
     public static boolean isValidWarehouseName(String name) {
         return name != null && name.trim().length() >= 2 && name.trim().length() <= 100;
     }
+
+    public static boolean isValidProductCode(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            return false;
+        }
+        return Pattern.compile(Constant.PRODUCT_CODE_PATTERN).matcher(code.trim()).matches();
+    }
+
+    public static boolean isValidProductName(String name) {
+        return name != null && name.trim().length() >= 2 && name.trim().length() <= 200;
+    }
+
+    public static boolean isValidCategoryName(String name) {
+        return name != null && name.trim().length() >= 2 && name.trim().length() <= 100;
+    }
+
+    public static boolean hasRole(int userRoleId, int[] allowedRoles) {
+        for (int r : allowedRoles) {
+            if (r == userRoleId) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
