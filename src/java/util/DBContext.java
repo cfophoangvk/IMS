@@ -1,5 +1,6 @@
 package util;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import java.sql.*;
 
 public class DBContext {
@@ -7,9 +8,10 @@ public class DBContext {
     private static Connection con = null;
 
     static {
-        String url = "jdbc:sqlserver://localhost:1433;databaseName=IMS;trustServerCertificate=true";
-        String user = "sa";
-        String pass = "123456";
+        Dotenv dotenv = Dotenv.load();
+        String url = dotenv.get("DB_URL");
+        String user = dotenv.get("DB_USER");
+        String pass = dotenv.get("DB_PASS");
         
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");

@@ -15,6 +15,7 @@ public class Constant {
     public static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*]).{8,50}$";
     public static final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     public static final String USERNAME_PATTERN = "^[a-zA-Z0-9_]{3,50}$";
+    public static final String WAREHOUSE_CODE_PATTERN = "^[A-Za-z0-9\\-_]{1,20}$";
     /*
         PASSWORD_PATTERN:
         (?=.*[0-9]): Phải chứa ít nhất một chữ số (0-9).

@@ -45,4 +45,16 @@ public class Validator {
         }
         return false;
     }
+
+    public static boolean isValidWarehouseCode(String code) {
+        if (code == null || code.trim().isEmpty()) {
+            return false;
+        }
+        Pattern pattern = Pattern.compile(Constant.WAREHOUSE_CODE_PATTERN);
+        return pattern.matcher(code.trim()).matches();
+    }
+
+    public static boolean isValidWarehouseName(String name) {
+        return name != null && name.trim().length() >= 2 && name.trim().length() <= 100;
+    }
 }

@@ -63,7 +63,7 @@ public class AuthServlet extends HttpServlet {
     }
 
     private void handleShowChangePasswordForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String email = request.getParameter("email");
+        String email = request.getParameter("email").trim();
         
         if (email == null) {
             request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
@@ -79,8 +79,8 @@ public class AuthServlet extends HttpServlet {
     }
 
     private void handleLogin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
+        String username = request.getParameter("username").trim();
+        String password = request.getParameter("password").trim();
 
         UserDAO userDAO = new UserDAO();
         User user = userDAO.getUserByUsername(username);
@@ -135,9 +135,9 @@ public class AuthServlet extends HttpServlet {
             return;
         }
 
-        String email = request.getParameter("email");
-        String newPassword = request.getParameter("newPassword");
-        String confirmPassword = request.getParameter("confirmPassword");
+        String email = request.getParameter("email").trim();
+        String newPassword = request.getParameter("newPassword").trim();
+        String confirmPassword = request.getParameter("confirmPassword").trim();
         
         request.setAttribute("email", email); // Nếu có lỗi thì vẫn giữ nguyên email.
 
@@ -182,9 +182,9 @@ public class AuthServlet extends HttpServlet {
 
     private void handleResetPassword(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
-        String usernameEmail = request.getParameter("usernameEmail");
-        String password = request.getParameter("password");
-        String confirmPassword = request.getParameter("confirmPassword");
+        String usernameEmail = request.getParameter("usernameEmail").trim();
+        String password = request.getParameter("password").trim();
+        String confirmPassword = request.getParameter("confirmPassword").trim();
         
         if (!password.equals(confirmPassword)) {
             request.setAttribute("error", "Mật khẩu xác nhận không khớp!");

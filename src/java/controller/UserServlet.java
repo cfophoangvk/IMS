@@ -110,9 +110,10 @@ public class UserServlet extends HttpServlet {
         if (roleIdStr != null && !roleIdStr.trim().isEmpty()) {
             try {
                 roleId = Integer.parseInt(roleIdStr);
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
-        
+
         String pageStr = request.getParameter("page");
         int page = 1;
         try {
@@ -146,10 +147,10 @@ public class UserServlet extends HttpServlet {
     }
 
     private void handleCreateUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String username = request.getParameter("username");
-        String fullName = request.getParameter("fullName");
-        String email = request.getParameter("email");
-        String roleIdStr = request.getParameter("roleId");
+        String username = request.getParameter("username").trim();
+        String fullName = request.getParameter("fullName").trim();
+        String email = request.getParameter("email").trim();
+        String roleIdStr = request.getParameter("roleId").trim();
 
         RoleDAO roleDAO = new RoleDAO();
         List<Role> roles = roleDAO.getAllRoles();
@@ -269,7 +270,7 @@ public class UserServlet extends HttpServlet {
     }
 
     private void handleShowEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String userIdStr = request.getParameter("id");
+        String userIdStr = request.getParameter("id").trim();
         if (userIdStr == null) {
             response.sendRedirect(request.getContextPath() + "/user/list");
             return;
@@ -287,10 +288,10 @@ public class UserServlet extends HttpServlet {
     }
 
     private void handleEditUser(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String userIdStr = request.getParameter("userId");
-        String fullName = request.getParameter("fullName");
-        String email = request.getParameter("email");
-        String roleIdStr = request.getParameter("roleId");
+        String userIdStr = request.getParameter("userId").trim();
+        String fullName = request.getParameter("fullName").trim();
+        String email = request.getParameter("email").trim();
+        String roleIdStr = request.getParameter("roleId").trim();
 
         int userId = Integer.parseInt(userIdStr);
 
@@ -345,14 +346,14 @@ public class UserServlet extends HttpServlet {
     }
 
     private void handleToggleStatus(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String userIdStr = request.getParameter("id");
+        String userIdStr = request.getParameter("id").trim();
         UserDAO userDAO = new UserDAO();
         userDAO.toggleUserStatus(Integer.parseInt(userIdStr), getLoggedUser(request).getUserId());
         response.sendRedirect(request.getContextPath() + "/user/list?success=" + java.net.URLEncoder.encode("Cập nhật trạng thái thành công!", "UTF-8"));
     }
 
     private void handleSendEmail(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String userIdStr = request.getParameter("id");
+        String userIdStr = request.getParameter("id").trim();
         int userId = Integer.parseInt(userIdStr);
 
         UserDAO userDAO = new UserDAO();

@@ -118,7 +118,7 @@
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    <i class="fas fa-circle text-red-500 mr-1" style="font-size: 6px;"></i> Vô hiệu
+                                                    <i class="fas fa-circle text-red-500 mr-1" style="font-size: 6px;"></i> Đã ẩn
                                                 </span>
                                             </c:otherwise>
                                         </c:choose>
@@ -134,7 +134,7 @@
                                                 <form action="${pageContext.request.contextPath}/user/toggle-status" method="POST" class="inline"
                                                       onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái tài khoản này?')">
                                                     <input type="hidden" name="id" value="${user.userId}">
-                                                    <button type="submit" title="${user.status ? 'Vô hiệu' : 'Kích hoạt'}"
+                                                    <button type="submit" title="${user.status ? 'Ẩn' : 'Kích hoạt'}"
                                                             class="inline-flex items-center px-3 py-3 text-sm rounded-md transition bg-gray-50 text-gray-600 hover:bg-gray-100">
                                                         <i class="fas ${user.status ? 'fa-ban' : 'fa-unlock'} mr-1"></i>
                                                     </button>

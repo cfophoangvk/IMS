@@ -74,7 +74,7 @@ public class UserDAO {
              + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
              
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            String searchPattern = "%" + (search != null ? search : "") + "%";
+            String searchPattern = "%" + (search != null ? search.trim() : "") + "%";
             ps.setString(1, searchPattern);
             ps.setString(2, searchPattern);
             ps.setString(3, searchPattern);
@@ -107,7 +107,7 @@ public class UserDAO {
         }
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            String searchPattern = "%" + (search != null ? search : "") + "%";
+            String searchPattern = "%" + (search != null ? search.trim() : "") + "%";
             ps.setString(1, searchPattern);
             ps.setString(2, searchPattern);
             ps.setString(3, searchPattern);
