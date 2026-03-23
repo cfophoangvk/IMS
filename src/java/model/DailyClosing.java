@@ -16,6 +16,9 @@ public class DailyClosing {
     private int updatedBy;
     private Timestamp updatedDate;
 
+    private String warehouseName;
+    private String createdByName;
+
     public DailyClosing() {
     }
 
@@ -89,5 +92,21 @@ public class DailyClosing {
 
     public void setUpdatedDate(Timestamp updatedDate) {
         this.updatedDate = updatedDate;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
     }
 }

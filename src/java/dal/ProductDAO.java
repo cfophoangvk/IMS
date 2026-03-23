@@ -170,4 +170,22 @@ public class ProductDAO {
         }
         return false;
     }
+
+    public List<Product> getProductsByCategoryForDropdown(int categoryId) {
+        List<Product> list = new ArrayList<>();
+        String sql = "SELECT p.* FROM Products p "
+                + "JOIN Categories c ON p.CategoryId = c.CategoryId "
+                + "WHERE p.Status = 1 AND c.Status = 1 AND p.CategoryId = ? ORDER BY p.ProductName ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, categoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSet(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

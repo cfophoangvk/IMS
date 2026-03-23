@@ -18,6 +18,12 @@ public class InventoryTransaction extends BaseModel {
     private int approvedBy;
     private Timestamp approvedDate;
 
+    private String fromWarehouseName;
+    private String toWarehouseName;
+    private String createdByName;
+    private String approvedByName;
+    private String partnerName;
+
     public InventoryTransaction() {
     }
 
@@ -107,5 +113,45 @@ public class InventoryTransaction extends BaseModel {
 
     public void setApprovedDate(Timestamp approvedDate) {
         this.approvedDate = approvedDate;
+    }
+
+    public String getFromWarehouseName() {
+        return fromWarehouseName;
+    }
+
+    public void setFromWarehouseName(String fromWarehouseName) {
+        this.fromWarehouseName = fromWarehouseName;
+    }
+
+    public String getToWarehouseName() {
+        return toWarehouseName;
+    }
+
+    public void setToWarehouseName(String toWarehouseName) {
+        this.toWarehouseName = toWarehouseName;
+    }
+
+    public String getCreatedByName() {
+        return createdByName;
+    }
+
+    public void setCreatedByName(String createdByName) {
+        this.createdByName = createdByName;
+    }
+
+    public String getApprovedByName() {
+        return approvedByName;
+    }
+
+    public void setApprovedByName(String approvedByName) {
+        this.approvedByName = approvedByName;
+    }
+
+    public String getPartnerName() {
+        return partnerName;
+    }
+
+    public void setPartnerName(String partnerName) {
+        this.partnerName = partnerName;
     }
 }

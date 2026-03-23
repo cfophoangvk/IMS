@@ -106,7 +106,8 @@ CREATE TABLE InventoryTransactions (
     -- Nếu Nhập: ToWarehouseId có data. Nếu Xuất: FromWarehouseId có data. Nếu Chuyển: Cả 2 có data.
     FromWarehouseId INT NULL FOREIGN KEY REFERENCES Warehouses(WarehouseId),
     ToWarehouseId INT NULL FOREIGN KEY REFERENCES Warehouses(WarehouseId),
-    PartnerId INT NULL FOREIGN KEY REFERENCES Partners(PartnerId), -- NCC hoặc Khách hàng
+    -- PartnerId INT NULL FOREIGN KEY REFERENCES Partners(PartnerId), -- NCC hoặc Khách hàng
+    PartnerId INT NULL, -- chưa làm bảng Partner
     Notes NVARCHAR(500),
     ApprovalStatus TINYINT DEFAULT 0, -- 0: Pending (Chưa duyệt), 1: Approved (Đã duyệt/Chốt số liệu), 2: Rejected
     ApprovedBy INT NULL FOREIGN KEY REFERENCES Users(UserId),
@@ -192,3 +193,9 @@ INSERT [dbo].[Users] ([UserId], [RoleId], [Username], [PasswordHash], [FullName]
 GO
 SET IDENTITY_INSERT [dbo].[Users] OFF
 GO
+
+/*
+ALTER TABLE InventoryTransactions DROP CONSTRAINT FK__Inventory__Partn__5AEE82B9;
+alter table InventoryTransactions drop column PartnerId;
+alter table InventoryTransactions add PartnerId int null;
+*/

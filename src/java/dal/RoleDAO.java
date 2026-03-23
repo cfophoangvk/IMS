@@ -48,4 +48,31 @@ public class RoleDAO {
         }
         return null;
     }
+
+    public boolean isRoleExists(String roleName) {
+        String sql = "SELECT 1 FROM Roles WHERE RoleName = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setNString(1, roleName.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean createRole(Role role) {
+        String sql = "INSERT INTO Roles (RoleName, Description) VALUES (?, ?)";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setNString(1, role.getRoleName());
+            ps.setNString(2, role.getDescription());
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -56,7 +56,9 @@ public class WarehouseDAO {
             ps.setString(2, pattern);
             ps.setString(3, pattern);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -69,7 +71,9 @@ public class WarehouseDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return mapResultSetToWarehouse(rs);
+                if (rs.next()) {
+                    return mapResultSetToWarehouse(rs);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,7 +92,9 @@ public class WarehouseDAO {
             int affected = ps.executeUpdate();
             if (affected > 0) {
                 try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) return keys.getInt(1);
+                    if (keys.next()) {
+                        return keys.getInt(1);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -129,11 +135,28 @@ public class WarehouseDAO {
             ps.setString(1, code);
             ps.setInt(2, excludeId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public List<Warehouse> getAllActiveWarehouses() {
+        List<Warehouse> list = new ArrayList<>();
+        String sql = "SELECT * FROM Warehouses WHERE Status = 1 ORDER BY WarehouseName ASC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapResultSetToWarehouse(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 }

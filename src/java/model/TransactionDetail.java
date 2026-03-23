@@ -10,6 +10,11 @@ public class TransactionDetail extends BaseModel {
     private BigDecimal quantity;
     private BigDecimal price;
 
+    private String productName;
+    private String productCode;
+    private String unit;
+    private String categoryName;
+
     public TransactionDetail() {
     }
 
@@ -51,5 +56,37 @@ public class TransactionDetail extends BaseModel {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductCode() {
+        return productCode;
+    }
+
+    public void setProductCode(String productCode) {
+        this.productCode = productCode;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
     }
 }
