@@ -40,21 +40,21 @@
                             <table class="w-full">
                                 <thead class="bg-gray-50 border-b">
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Trọng số</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Tên vai trò</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Mô tả</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Tên vai trò</th>
+                                        <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Mô tả</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     <c:forEach var="r" items="${roles}">
                                         <tr class="hover:bg-gray-50 transition">
-                                            <td class="px-4 py-3 text-sm font-medium text-gray-500 text-center w-16">
+                                            <td class="px-4 py-3 text-sm font-medium text-gray-500 w-16 text-center">
                                                 <span class="px-2 py-1 bg-gray-100 border border-gray-200 rounded-lg">${r.roleId}</span>
                                             </td>
-                                            <td class="px-4 py-3">
+                                            <td class="px-4 py-3 text-center">
                                                 <span class="text-sm font-semibold text-gray-800">${r.roleName}</span>
                                             </td>
-                                            <td class="px-4 py-3 text-sm text-gray-600">${r.description}</td>
+                                            <td class="px-4 py-3 text-sm text-gray-600 text-center">${r.description}</td>
                                         </tr>
                                     </c:forEach>
                                     <c:if test="${empty roles}">
@@ -72,7 +72,7 @@
                             <h2 class="text-lg font-semibold text-gray-800"><i class="fas fa-plus-circle mr-2 text-green-500"></i> Thêm vai trò mới</h2>
                         </div>
                         <div class="p-6">
-                            <form action="${pageContext.request.contextPath}/role/list" method="POST" class="space-y-4">
+                            <form id="saveRoleForm" action="${pageContext.request.contextPath}/role/list" method="POST" class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Tên vai trò <span class="text-red-500">*</span></label>
                                     <input type="text" name="roleName" required placeholder="Ví dụ: Kế toán"
@@ -84,7 +84,7 @@
                                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition resize-none text-sm"></textarea>
                                 </div>
                                 <div class="pt-2">
-                                    <button type="submit" class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex justify-center items-center shadow-sm">
+                                    <button type="button" onclick="saveForm()" class="w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium flex justify-center items-center shadow-sm">
                                         <i class="fas fa-save mr-2"></i>Lưu vai trò
                                     </button>
                                 </div>
@@ -95,4 +95,12 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function saveForm() {
+            if (confirm("Bạn có muốn tạo vai trò mới? LƯU Ý: KHÔNG THỂ XÓA VAI TRÒ NÀY!")) {
+                document.getElementById("saveRoleForm").submit();
+            }
+        }
+    </script>
 </layout:layout>

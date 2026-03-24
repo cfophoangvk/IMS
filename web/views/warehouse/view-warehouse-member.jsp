@@ -29,7 +29,6 @@
         </div>
 
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <!-- Alerts -->
             <c:if test="${not empty param.success}">
                 <div id="successAlert" class="bg-green-50 border-l-4 border-green-500 p-4 mb-4 rounded-r-lg flex items-center justify-between">
                     <div class="flex items-center">
@@ -49,7 +48,6 @@
                 </div>
             </c:if>
 
-            <!-- Members Table -->
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full">
@@ -81,7 +79,7 @@
                                 <td class="px-6 py-4 text-center">
                                     <form action="${pageContext.request.contextPath}/warehouse/member/remove" method="POST" class="inline"
                                           onsubmit="return confirm('Bạn có chắc muốn xóa ${m.fullName} khỏi kho này?')">
-                                        <input type="hidden" name="uwId" value="${m.createdBy}">
+                                        <input type="hidden" name="userId" value="${m.userId}">
                                         <input type="hidden" name="warehouseId" value="${warehouse.warehouseId}">
                                         <button type="submit" class="inline-flex items-center px-3 py-2 text-sm bg-red-50 text-red-600 hover:bg-red-100 rounded-md transition" title="Xóa">
                                             <i class="fas fa-user-minus mr-1"></i> Xóa

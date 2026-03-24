@@ -21,7 +21,6 @@
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <!-- Alerts -->
             <c:if test="${not empty param.success}">
                 <div id="successAlert" class="bg-green-50 border-l-4 border-green-500 p-4 mb-4 rounded-r-lg flex items-center justify-between">
                     <div class="flex items-center">
@@ -41,7 +40,6 @@
                 </div>
             </c:if>
 
-            <!-- Search -->
             <div class="bg-white rounded-lg shadow-sm border p-4 mb-6">
                 <form action="${pageContext.request.contextPath}/warehouse/list" method="GET" class="flex gap-3">
                     <div class="flex-1 relative">
@@ -59,8 +57,7 @@
                     </c:if>
                 </form>
             </div>
-
-            <!-- Table -->
+            
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full">
@@ -137,7 +134,6 @@
                     </table>
                 </div>
 
-                <!-- Pagination -->
                 <c:if test="${totalPages > 1}">
                     <div class="bg-white px-4 py-3 flex items-center justify-center border-t sm:px-6">
                         <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">

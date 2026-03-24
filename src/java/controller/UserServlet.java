@@ -353,22 +353,40 @@ public class UserServlet extends HttpServlet {
     }
 
     private void handleSendEmail(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String userIdStr = request.getParameter("id").trim();
-        int userId = Integer.parseInt(userIdStr);
-
-        UserDAO userDAO = new UserDAO();
-        User user = userDAO.getUserById(userId);
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/user/list?error=" + java.net.URLEncoder.encode("Không tìm thấy người dùng.", "UTF-8"));
+        String[] userIdsStr = request.getParameterValues("userIds");
+        
+        if (userIdsStr == null || userIdsStr.length == 0) {
+            response.sendRedirect(request.getContextPath() + "/user/list?error=" + java.net.URLEncoder.encode("Vui lòng chọn ít nhất một người dùng.", "UTF-8"));
             return;
         }
 
-        boolean sent = EmailService.sendAccountCredentials(user.getEmail(), user.getUsername(), Constant.DEFAULT_PASSWORD);
+        UserDAO userDAO = new UserDAO();
+        int successCount = 0;
+        int failCount = 0;
 
-        if (sent) {
-            response.sendRedirect(request.getContextPath() + "/user/list?success=" + java.net.URLEncoder.encode("Đã gửi email thông tin đăng nhập cho " + user.getUsername() + "!", "UTF-8"));
+        for (String idStr : userIdsStr) {
+            try {
+                int userId = Integer.parseInt(idStr);
+                User user = userDAO.getUserById(userId);
+                if (user != null && user.isFirstLogin()) {
+                    boolean sent = EmailService.sendAccountCredentials(user.getEmail(), user.getUsername(), Constant.DEFAULT_PASSWORD);
+                    if (sent) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                }
+            } catch (Exception e) {
+                failCount++;
+            }
+        }
+
+        if (successCount > 0 && failCount == 0) {
+            response.sendRedirect(request.getContextPath() + "/user/list?success=" + java.net.URLEncoder.encode("Đã gửi email thông tin đăng nhập thành công cho " + successCount + " tài khoản!", "UTF-8"));
+        } else if (successCount > 0 && failCount > 0) {
+            response.sendRedirect(request.getContextPath() + "/user/list?success=" + java.net.URLEncoder.encode("Đã gửi email cho " + successCount + " tài khoản. Thất bại " + failCount + " tài khoản.", "UTF-8"));
         } else {
-            response.sendRedirect(request.getContextPath() + "/user/list?error=" + java.net.URLEncoder.encode("Gửi email thất bại. Vui lòng kiểm tra cấu hình email.", "UTF-8"));
+            response.sendRedirect(request.getContextPath() + "/user/list?error=" + java.net.URLEncoder.encode("Gửi email thất bại. Vui lòng kiểm tra lại cấu hình email.", "UTF-8"));
         }
     }
 

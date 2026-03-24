@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import model.User;
 
 public class WarehouseDAO {
 
@@ -158,5 +159,97 @@ public class WarehouseDAO {
             e.printStackTrace();
         }
         return list;
+    }
+    
+    public List<User> getMembersByWarehouse(int warehouseId) {
+        List<User> members = new ArrayList<>();
+        String sql = "SELECT u.*, r.RoleName FROM Users u JOIN Roles r ON u.RoleId = r.RoleId WHERE u.WarehouseId = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, warehouseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("UserId"));
+                    u.setUsername(rs.getString("Username"));
+                    u.setFullName(rs.getNString("FullName"));
+                    u.setEmail(rs.getString("Email"));
+                    u.setRoleId(rs.getInt("RoleId"));
+                    u.setRoleName(rs.getString("RoleName"));
+                    members.add(u);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
+    
+    public boolean isManagerInWarehouse(int warehouseId) {
+        String sql = "SELECT 1 FROM Users WHERE WarehouseId = ? AND RoleId = 4";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, warehouseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<User> getUsersNotInWarehouse(boolean includeManager) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT u.*,r.RoleName FROM Users u JOIN Roles r ON u.RoleId = r.RoleId WHERE u.WarehouseId IS NULL AND u.RoleId IN (3" + (includeManager ? ", 4)" : ")");
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("UserId"));
+                    u.setUsername(rs.getString("Username"));
+                    u.setFullName(rs.getNString("FullName"));
+                    u.setEmail(rs.getString("Email"));
+                    u.setRoleId(rs.getInt("RoleId"));
+                    u.setRoleName(rs.getString("RoleName"));
+                    users.add(u);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public boolean updateUserWarehouse(Integer warehouseId, int userId) {
+        String sql = "UPDATE Users SET WarehouseId = ? WHERE UserId = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (warehouseId == null) {
+                ps.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                ps.setInt(1, warehouseId);
+            }
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isWarehouseMemberExists(int warehouseId, int userId) {
+        String sql = "SELECT 1 FROM Users u JOIN Warehouses w ON u.WarehouseId = w.WarehouseId WHERE u.WarehouseId = ? AND u.UserId = ? AND w.Status = 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, warehouseId);
+            ps.setInt(2, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

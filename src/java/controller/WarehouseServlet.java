@@ -1,6 +1,5 @@
 package controller;
 
-import dal.UserWarehouseDAO;
 import dal.WarehouseDAO;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -239,8 +238,8 @@ public class WarehouseServlet extends HttpServlet {
             return;
         }
 
-        UserWarehouseDAO uwDao = new UserWarehouseDAO();
-        List<User> members = uwDao.getMembersByWarehouse(warehouseId);
+        WarehouseDAO wdao = new WarehouseDAO();
+        List<User> members = wdao.getMembersByWarehouse(warehouseId);
 
         request.setAttribute("warehouse", w);
         request.setAttribute("members", members);
@@ -256,8 +255,10 @@ public class WarehouseServlet extends HttpServlet {
             return;
         }
 
-        UserWarehouseDAO uwDao = new UserWarehouseDAO();
-        List<User> availableUsers = uwDao.getAvailableUsers(warehouseId);
+        WarehouseDAO wdao = new WarehouseDAO();
+        boolean includeManager = !wdao.isManagerInWarehouse(warehouseId);
+        
+        List<User> availableUsers = wdao.getUsersNotInWarehouse(includeManager);
 
         request.setAttribute("warehouse", w);
         request.setAttribute("availableUsers", availableUsers);
@@ -274,14 +275,14 @@ public class WarehouseServlet extends HttpServlet {
         }
 
         int userId = Integer.parseInt(userIdStr);
-        UserWarehouseDAO uwDao = new UserWarehouseDAO();
+        WarehouseDAO wdao = new WarehouseDAO();
 
-        if (uwDao.isMemberExists(warehouseId, userId)) {
+        if (wdao.isWarehouseMemberExists(warehouseId, userId)) {
             response.sendRedirect(request.getContextPath() + "/warehouse/member/upsert?warehouseId=" + warehouseId + "&error=" + URLEncoder.encode("Nhân viên đã được phân công vào kho này.", "UTF-8"));
             return;
         }
 
-        if (uwDao.addMember(warehouseId, userId, getLoggedUser(request).getUserId())) {
+        if (wdao.updateUserWarehouse(warehouseId, userId)) {
             response.sendRedirect(request.getContextPath() + "/warehouse/members?id=" + warehouseId + "&success=" + URLEncoder.encode("Thêm nhân sự thành công!", "UTF-8"));
         } else {
             response.sendRedirect(request.getContextPath() + "/warehouse/member/upsert?warehouseId=" + warehouseId + "&error=" + URLEncoder.encode("Đã xảy ra lỗi.", "UTF-8"));
@@ -289,11 +290,11 @@ public class WarehouseServlet extends HttpServlet {
     }
 
     private void handleRemoveMember(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        int userWarehouseId = Integer.parseInt(request.getParameter("uwId").trim());
+        int userId = Integer.parseInt(request.getParameter("userId").trim());
         int warehouseId = Integer.parseInt(request.getParameter("warehouseId").trim());
 
-        UserWarehouseDAO uwDao = new UserWarehouseDAO();
-        uwDao.removeMember(userWarehouseId, getLoggedUser(request).getUserId());
+        WarehouseDAO wdao = new WarehouseDAO();
+        wdao.updateUserWarehouse(null, userId);
         response.sendRedirect(request.getContextPath() + "/warehouse/members?id=" + warehouseId + "&success=" + URLEncoder.encode("Đã xóa nhân sự khỏi kho.", "UTF-8"));
     }
 

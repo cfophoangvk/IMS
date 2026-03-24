@@ -12,6 +12,16 @@
                         <p class="text-sm text-gray-500 mt-1">Danh sách tất cả tài khoản trong hệ thống</p>
                     </div>
                     <div class="flex gap-3">
+                        <form id="batchEmailForm" action="${pageContext.request.contextPath}/user/send-email" method="POST" onsubmit="return validateBatchEmail()"></form>
+                        <button id="btnSelectBatchEmail" class="items-center px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white text-sm font-medium rounded-lg shadow-sm transition duration-200" onclick="toggleSelection(true)" title="Gửi email cho người dùng để nhận tài khoản.">
+                            <i class="fas fa-envelope mr-2"></i> Gửi email hàng loạt
+                        </button>
+                        <button type="submit" form="batchEmailForm" id="btnSendBatchEmail" class="items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded-lg shadow-sm transition duration-200 hidden">
+                            <i class="fas fa-mail-forward mr-2"></i> Gửi
+                        </button>
+                        <button id="btnCancelBatchEmail" class="items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg shadow-sm transition duration-200 hidden" onclick="toggleSelection(false)">
+                            <i class="fas fa-x mr-2"></i> Hủy
+                        </button>
                         <a href="${pageContext.request.contextPath}/user/create"
                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition duration-200">
                             <i class="fas fa-user-plus mr-2"></i> Tạo tài khoản
@@ -79,6 +89,9 @@
                     <table class="w-full">
                         <thead>
                             <tr class="bg-gray-50 border-b">
+                                <th class="px-4 py-3 text-center w-12 hidden" id="th-select">
+                                    <input type="checkbox" id="selectAll" class="accent-blue-500 size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" onclick="toggleAll(this)">
+                                </th>
                                 <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">#</th>
                                 <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Tên đăng nhập</th>
                                 <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Họ tên</th>
@@ -91,6 +104,11 @@
                         <tbody class="divide-y divide-gray-200">
                             <c:forEach var="user" items="${users}" varStatus="loop">
                                 <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-4 py-4 text-center td-select hidden">
+                                        <c:if test="${user.isFirstLogin()}">
+                                            <input type="checkbox" name="userIds" value="${user.userId}" form="batchEmailForm" class="accent-blue-500 size-4 user-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                                        </c:if>
+                                    </td>
                                     <td class="px-4 py-4 text-sm text-gray-500 text-center">${(currentPage - 1) * 10 + loop.index + 1}</td>
                                     <td class="px-6 py-4 text-center">
                                         <span class="text-sm font-medium text-gray-900">${user.username}</span>
@@ -140,24 +158,13 @@
                                                     </button>
                                                 </form>
                                             </c:if>
-                                               
-                                            <c:if test="${user.isFirstLogin()}">
-                                                <form action="${pageContext.request.contextPath}/user/send-email" method="POST" class="inline"
-                                                      onsubmit="return confirm('Gửi email thông tin đăng nhập cho ${user.username}?')">
-                                                    <input type="hidden" name="id" value="${user.userId}">
-                                                    <button type="submit"
-                                                            class="inline-flex items-center px-3 py-3 text-sm bg-yellow-50 text-yellow-700 hover:bg-yellow-100 rounded-md transition" title="Gửi email">
-                                                        <i class="fas fa-envelope mr-1"></i>
-                                                    </button>
-                                                </form>
-                                            </c:if>
                                         </div>
                                     </td>
                                 </tr>
                             </c:forEach>
                             <c:if test="${empty users}">
                                 <tr>
-                                    <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                                         <i class="fas fa-users text-4xl text-gray-300 mb-3 block"></i>
                                         <p class="text-lg font-medium">Không tìm thấy người dùng</p>
                                         <p class="text-sm mt-1">Thử tìm kiếm với từ khóa khác hoặc tạo tài khoản mới.</p>
@@ -218,5 +225,43 @@
                 setTimeout(() => alert.remove(), 500);
             });
         }, 5000);
+        
+        function toggleSelection(show) {
+            const thSelect = document.getElementById("th-select");
+            const tdSelects = document.getElementsByClassName("td-select");
+            const btnSelect = document.getElementById("btnSelectBatchEmail");
+            const btnCancel = document.getElementById("btnCancelBatchEmail");
+            const btnSend = document.getElementById("btnSendBatchEmail");
+            
+            if (show) {
+                thSelect.classList.remove("hidden");
+                Array.from(tdSelects).forEach(el => el.classList.remove("hidden"));
+                btnSelect.classList.add("hidden");
+                btnCancel.classList.remove("hidden");
+                btnSend.classList.remove("hidden");
+            } else {
+                thSelect.classList.add("hidden");
+                Array.from(tdSelects).forEach(el => el.classList.add("hidden"));
+                btnSelect.classList.remove("hidden");
+                btnCancel.classList.add("hidden");
+                btnSend.classList.add("hidden");
+            }
+        }
+
+        function toggleAll (source) {
+            const checkboxes = document.querySelectorAll('.user-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = source.checked;
+            });
+        }
+
+        function validateBatchEmail () {
+            const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('Vui lòng chọn ít nhất một tài khoản để gửi email!');
+                return false;
+            }
+            return confirm('Bạn có chắc muốn gửi email cho ' + checkboxes.length + ' tài khoản đã chọn?');
+        }
     </script>
 </layout:layout>

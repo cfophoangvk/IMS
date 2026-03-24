@@ -10,6 +10,7 @@ public class User extends BaseModel {
     private String email;
     private boolean isFirstLogin;
     private String roleName;
+    private int warehouseId;
 
     public User() {
     }
@@ -78,4 +79,11 @@ public class User extends BaseModel {
         this.roleName = roleName;
     }
 
+    public int getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(int warehouseId) {
+        this.warehouseId = warehouseId;
+    }
 }

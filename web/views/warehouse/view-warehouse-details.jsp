@@ -20,7 +20,6 @@
 
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-                <!-- Header with gradient -->
                 <div class="bg-gradient-to-r from-teal-600 to-cyan-700 px-6 py-8">
                     <div class="flex items-center gap-5">
                         <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl border-2 border-white/30">
@@ -35,7 +34,6 @@
                     </div>
                 </div>
 
-                <!-- Details -->
                 <div class="p-6">
                     <div class="grid gap-5">
                         <div class="flex items-center p-4 bg-gray-50 rounded-lg">

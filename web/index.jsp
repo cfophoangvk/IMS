@@ -23,7 +23,7 @@
         </div>
     </header>
 
-    <section class="relative pt-5 pb-7 lg:pt-16 lg:pb-10 overflow-hidden">
+    <section class="relative pt-5 pb-7 lg:pt-16 lg:pb-10 overflow-hidden bg-[linear-gradient(#FFFFFFC0,#FFFFFFC0),url('${pageContext.request.contextPath}/assets/images/background.png')] bg-cover bg-center">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
             <div class="text-center max-w-3xl mx-auto">
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
