@@ -40,9 +40,10 @@ public class Constant {
     public static final int[] PRODUCT_VIEWER_ROLES = {ROLE_SYSTEM_ADMIN, ROLE_EMPLOYEE, ROLE_MANAGER, ROLE_BUSINESS_OWNER};
     public static final int[] PRODUCT_EDITOR_ROLES = {ROLE_SYSTEM_ADMIN, ROLE_MANAGER};
 
-    public static final int TX_TYPE_IMPORT = 1;
-    public static final int TX_TYPE_EXPORT = 2;
-    public static final int TX_TYPE_TRANSFER = 3;
+    public static final int TX_IMPORT_SUPPLIER = 1;
+    public static final int TX_EXPORT_SUPPLIER = 2;
+    public static final int TX_IMPORT_INTERNAL = 3;
+    public static final int TX_EXPORT_INTERNAL = 4;
 
     public static final int APPROVAL_PENDING = 0;
     public static final int APPROVAL_APPROVED = 1;

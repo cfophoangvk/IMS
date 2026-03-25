@@ -24,6 +24,7 @@ public class UserDAO {
         user.setEmail(rs.getString("Email"));
         user.setFirstLogin(rs.getBoolean("IsFirstLogin"));
         user.setStatus(rs.getBoolean("Status"));
+        user.setWarehouseId(rs.getInt("WarehouseId"));
         if (Validator.hasColumn(rs, "RoleName")) {
             user.setRoleName(rs.getString("RoleName"));
         }

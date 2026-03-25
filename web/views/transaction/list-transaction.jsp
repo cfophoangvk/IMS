@@ -47,9 +47,10 @@
                     <div class="w-48">
                         <select name="type" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
                             <option value="">-- Loại phiếu --</option>
-                            <option value="1" ${filterType == 1 ? 'selected' : ''}>Nhập ngoài</option>
-                            <option value="2" ${filterType == 2 ? 'selected' : ''}>Xuất ngoài</option>
-                            <option value="3" ${filterType == 3 ? 'selected' : ''}>Chuyển nội bộ</option>
+                            <option value="1" ${filterType == 1 ? 'selected' : ''}>Nhập - Nhà cung cấp</option>
+                            <option value="2" ${filterType == 2 ? 'selected' : ''}>Xuất - Nhà cung cấp</option>
+                            <option value="3" ${filterType == 3 ? 'selected' : ''}>Nhập - Nội bộ</option>
+                            <option value="4" ${filterType == 4 ? 'selected' : ''}>Xuất - Nội bộ</option>
                         </select>
                     </div>
                     <c:if test="${u.roleId != 5}">
@@ -93,9 +94,10 @@
                                     <td class="px-4 py-3"><span class="text-sm font-medium text-blue-600">${t.transactionCode}</span></td>
                                     <td class="px-4 py-3 text-sm">
                                         <c:choose>
-                                            <c:when test="${t.transactionType == 1}"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Nhập ngoài</span></c:when>
-                                            <c:when test="${t.transactionType == 2}"><span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Xuất ngoài</span></c:when>
-                                            <c:when test="${t.transactionType == 3}"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Chuyển nội bộ</span></c:when>
+                                            <c:when test="${t.transactionType == 1}"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Nhập - NCC</span></c:when>
+                                            <c:when test="${t.transactionType == 2}"><span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Xuất - NCC</span></c:when>
+                                            <c:when test="${t.transactionType == 3}"><span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Nhập - Nội bộ</span></c:when>
+                                            <c:when test="${t.transactionType == 4}"><span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">Xuất - Nội bộ</span></c:when>
                                         </c:choose>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-700"><fmt:formatDate value="${t.transactionDate}" pattern="dd/MM/yyyy"/></td>

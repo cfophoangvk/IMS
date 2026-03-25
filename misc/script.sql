@@ -82,7 +82,7 @@ CREATE TABLE Products (
 CREATE TABLE InventoryTransactions (
     TransactionId INT IDENTITY(1,1) PRIMARY KEY,
     TransactionCode VARCHAR(50) UNIQUE NOT NULL,
-    TransactionType TINYINT NOT NULL, -- 1: Nhập ngoài, 2: Xuất ngoài, 3: Chuyển nội bộ
+    TransactionType TINYINT NOT NULL, -- 1: Nhập ngoài, 2: Xuất ngoài, 3: Nhập nội bộ, 4: Xuất nội bộ
     TransactionDate DATETIME NOT NULL,
     -- Nếu Nhập: ToWarehouseId có data. Nếu Xuất: FromWarehouseId có data. Nếu Chuyển: Cả 2 có data.
     FromWarehouseId INT NULL FOREIGN KEY REFERENCES Warehouses(WarehouseId),

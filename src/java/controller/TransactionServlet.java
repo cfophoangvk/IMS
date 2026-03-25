@@ -2,7 +2,6 @@ package controller;
 
 import dal.*;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
@@ -26,8 +25,7 @@ import util.Validator;
     "/transaction/edit",
     "/transaction/approve",
     "/transaction/reject",
-    "/transaction/approval-list",
-    "/api/products-by-category"
+    "/transaction/approval-list"
 })
 public class TransactionServlet extends HttpServlet {
 
@@ -62,7 +60,7 @@ public class TransactionServlet extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/dashboard");
                     return;
                 }
-                prepareFormData(request);
+                prepareFormData(request, user);
                 request.getRequestDispatcher("/views/transaction/add-transaction.jsp").forward(request, response);
                 break;
             case "/transaction/edit":
@@ -78,9 +76,6 @@ public class TransactionServlet extends HttpServlet {
                     return;
                 }
                 handleApprovalList(request, response);
-                break;
-            case "/api/products-by-category":
-                handleProductsByCategory(request, response);
                 break;
         }
     }
@@ -138,7 +133,6 @@ public class TransactionServlet extends HttpServlet {
         Integer type = parseIntOrNull(request.getParameter("type"));
         Integer approvalStatus = null;
 
-        // Business Owner: only see approved
         if (user.getRoleId() == Constant.ROLE_BUSINESS_OWNER) {
             approvalStatus = Constant.APPROVAL_APPROVED;
         } else {
@@ -150,7 +144,6 @@ public class TransactionServlet extends HttpServlet {
         int total = dao.getTotalTransactions(search, type, approvalStatus);
         List<InventoryTransaction> list = dao.getAllTransactions(search, type, approvalStatus, page, Constant.PAGE_SIZE);
 
-        // Set partner names
         for (InventoryTransaction t : list) {
             if (t.getPartnerId() > 0) {
                 t.setPartnerName(Constant.PARTNER_LIST.getOrDefault(t.getPartnerId(), ""));
@@ -201,7 +194,6 @@ public class TransactionServlet extends HttpServlet {
         TransactionDetailDAO detailDao = new TransactionDetailDAO();
         List<TransactionDetail> details = detailDao.getDetailsByTransactionId(id);
 
-        // Check if date is closed (for approve/reject button visibility)
         boolean dateClosed = false;
         if (tx.getTransactionDate() != null) {
             java.sql.Date txDate = new java.sql.Date(tx.getTransactionDate().getTime());
@@ -216,41 +208,61 @@ public class TransactionServlet extends HttpServlet {
     }
 
     private void handleAdd(HttpServletRequest request, HttpServletResponse response, User user) throws ServletException, IOException {
-        int typeInt = Integer.parseInt(request.getParameter("transactionType"));
+        String direction = request.getParameter("direction"); // "import" or "export"
+        String source = request.getParameter("source");       // "supplier" or "internal"
         String dateStr = request.getParameter("transactionDate");
-        String fromWhStr = request.getParameter("fromWarehouseId");
-        String toWhStr = request.getParameter("toWarehouseId");
+        String otherWhStr = request.getParameter("otherWarehouseId");
         String partnerIdStr = request.getParameter("partnerId");
 
         List<String> errors = new ArrayList<>();
-        if (typeInt < 1 || typeInt > 3) {
-            errors.add("Loại phiếu không hợp lệ.");
+
+        boolean isImport = "import".equals(direction);
+        boolean isInternal = "internal".equals(source);
+
+        if (direction == null || (!direction.equals("import") && !direction.equals("export"))) {
+            errors.add("Vui lòng chọn hướng giao dịch (Nhập/Xuất).");
+        }
+        if (source == null || (!source.equals("supplier") && !source.equals("internal"))) {
+            errors.add("Vui lòng chọn nguồn giao dịch (Nhà cung cấp/Nội bộ).");
         }
         if (dateStr == null || dateStr.isEmpty()) {
             errors.add("Vui lòng chọn ngày giao dịch.");
         }
 
-        int fromWh = parseIntSafe(fromWhStr);
-        int toWh = parseIntSafe(toWhStr);
+        int userWarehouseId = user.getWarehouseId();
+        int otherWh = parseIntSafe(otherWhStr);
         int partnerId = parseIntSafe(partnerIdStr);
 
-        // Validate warehouse based on type
-        if (typeInt == Constant.TX_TYPE_IMPORT && toWh <= 0) {
-            errors.add("Phiếu nhập cần chọn kho đến.");
+        if (userWarehouseId <= 0) {
+            errors.add("Tài khoản chưa được gán kho. Vui lòng liên hệ quản trị viên.");
         }
-        if (typeInt == Constant.TX_TYPE_EXPORT && fromWh <= 0) {
-            errors.add("Phiếu xuất cần chọn kho từ.");
+        if (isInternal && otherWh <= 0) {
+            errors.add("Vui lòng chọn kho để chuyển.");
         }
-        if (typeInt == Constant.TX_TYPE_TRANSFER) {
-            if (fromWh <= 0 || toWh <= 0) {
-                errors.add("Phiếu chuyển cần chọn cả kho từ và kho đến.");
-            }
-            if (fromWh > 0 && fromWh == toWh) {
-                errors.add("Kho từ và kho đến phải khác nhau.");
-            }
+        if (isInternal && otherWh > 0 && otherWh == userWarehouseId) {
+            errors.add("Kho chuyển phải khác kho hiện tại.");
         }
 
-        // Parse details
+        int typeInt;
+        int fromWh, toWh;
+        if (isImport && !isInternal) {
+            typeInt = Constant.TX_IMPORT_SUPPLIER;
+            fromWh = 0;
+            toWh = userWarehouseId;
+        } else if (!isImport && !isInternal) {
+            typeInt = Constant.TX_EXPORT_SUPPLIER;
+            fromWh = userWarehouseId;
+            toWh = 0;
+        } else if (isImport && isInternal) {
+            typeInt = Constant.TX_IMPORT_INTERNAL;
+            fromWh = otherWh;
+            toWh = userWarehouseId;
+        } else {
+            typeInt = Constant.TX_EXPORT_INTERNAL;
+            fromWh = userWarehouseId;
+            toWh = otherWh;
+        }
+
         String[] productIds = request.getParameterValues("productId");
         String[] quantities = request.getParameterValues("quantity");
         String[] prices = request.getParameterValues("price");
@@ -279,19 +291,36 @@ public class TransactionServlet extends HttpServlet {
             }
         }
 
+        if (errors.isEmpty() && !details.isEmpty()) {
+            InventoryBalanceDAO balanceDao = new InventoryBalanceDAO();
+            String stockError = null;
+            if (!isImport && !isInternal) {
+                // Xuất - Nhà cung cấp: check kho hiện tại
+                stockError = balanceDao.checkStockForDetails(userWarehouseId, details);
+            } else if (isImport && isInternal) {
+                // Nhập - Nội bộ: check kho bên kia
+                stockError = balanceDao.checkStockForDetails(otherWh, details);
+            } else if (!isImport && isInternal) {
+                // Xuất - Nội bộ: check kho hiện tại
+                stockError = balanceDao.checkStockForDetails(userWarehouseId, details);
+            }
+            if (stockError != null) {
+                errors.add(stockError);
+            }
+        }
+
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
-            request.setAttribute("transactionType", typeInt);
+            request.setAttribute("direction", direction);
+            request.setAttribute("source", source);
             request.setAttribute("transactionDate", dateStr);
-            request.setAttribute("fromWarehouseId", fromWhStr);
-            request.setAttribute("toWarehouseId", toWhStr);
+            request.setAttribute("otherWarehouseId", otherWhStr);
             request.setAttribute("partnerId", partnerIdStr);
-            prepareFormData(request);
+            prepareFormData(request, user);
             request.getRequestDispatcher("/views/transaction/add-transaction.jsp").forward(request, response);
             return;
         }
 
-        // Create transaction
         InventoryTransactionDAO txDao = new InventoryTransactionDAO();
         InventoryTransaction tx = new InventoryTransaction();
         tx.setTransactionCode(txDao.generateTransactionCode(typeInt));
@@ -313,7 +342,7 @@ public class TransactionServlet extends HttpServlet {
             redirect(response, request, "/transaction/list", "Tạo phiếu thành công!", null);
         } else {
             request.setAttribute("errors", List.of("Lỗi khi tạo phiếu."));
-            prepareFormData(request);
+            prepareFormData(request, user);
             request.getRequestDispatcher("/views/transaction/add-transaction.jsp").forward(request, response);
         }
     }
@@ -336,7 +365,7 @@ public class TransactionServlet extends HttpServlet {
 
         request.setAttribute("tx", tx);
         request.setAttribute("details", details);
-        prepareFormData(request);
+        prepareFormData(request, user);
         request.getRequestDispatcher("/views/transaction/edit-transaction.jsp").forward(request, response);
     }
 
@@ -350,38 +379,60 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        int typeInt = Integer.parseInt(request.getParameter("transactionType"));
+        String direction = request.getParameter("direction");
+        String source = request.getParameter("source");
         String dateStr = request.getParameter("transactionDate");
-        String fromWhStr = request.getParameter("fromWarehouseId");
-        String toWhStr = request.getParameter("toWarehouseId");
+        String otherWhStr = request.getParameter("otherWarehouseId");
         String partnerIdStr = request.getParameter("partnerId");
         String notes = request.getParameter("notes");
 
         List<String> errors = new ArrayList<>();
-        if (typeInt < 1 || typeInt > 3) {
-            errors.add("Loại phiếu không hợp lệ.");
+
+        boolean isImport = "import".equals(direction);
+        boolean isInternal = "internal".equals(source);
+
+        if (direction == null || (!direction.equals("import") && !direction.equals("export"))) {
+            errors.add("Vui lòng chọn hướng giao dịch (Nhập/Xuất).");
+        }
+        if (source == null || (!source.equals("supplier") && !source.equals("internal"))) {
+            errors.add("Vui lòng chọn nguồn giao dịch (Nhà cung cấp/Nội bộ).");
         }
         if (dateStr == null || dateStr.isEmpty()) {
             errors.add("Vui lòng chọn ngày giao dịch.");
         }
 
-        int fromWh = parseIntSafe(fromWhStr);
-        int toWh = parseIntSafe(toWhStr);
+        int userWarehouseId = user.getWarehouseId();
+        int otherWh = parseIntSafe(otherWhStr);
         int partnerId = parseIntSafe(partnerIdStr);
 
-        if (typeInt == Constant.TX_TYPE_IMPORT && toWh <= 0) {
-            errors.add("Phiếu nhập cần chọn kho đến.");
+        if (userWarehouseId <= 0) {
+            errors.add("Tài khoản chưa được gán kho. Vui lòng liên hệ quản trị viên.");
         }
-        if (typeInt == Constant.TX_TYPE_EXPORT && fromWh <= 0) {
-            errors.add("Phiếu xuất cần chọn kho từ.");
+        if (isInternal && otherWh <= 0) {
+            errors.add("Vui lòng chọn kho để chuyển.");
         }
-        if (typeInt == Constant.TX_TYPE_TRANSFER) {
-            if (fromWh <= 0 || toWh <= 0) {
-                errors.add("Phiếu chuyển cần chọn cả kho từ và kho đến.");
-            }
-            if (fromWh > 0 && fromWh == toWh) {
-                errors.add("Kho từ và kho đến phải khác nhau.");
-            }
+        if (isInternal && otherWh > 0 && otherWh == userWarehouseId) {
+            errors.add("Kho chuyển phải khác kho hiện tại.");
+        }
+
+        int typeInt;
+        int fromWh, toWh;
+        if (isImport && !isInternal) {
+            typeInt = Constant.TX_IMPORT_SUPPLIER;
+            fromWh = 0;
+            toWh = userWarehouseId;
+        } else if (!isImport && !isInternal) {
+            typeInt = Constant.TX_EXPORT_SUPPLIER;
+            fromWh = userWarehouseId;
+            toWh = 0;
+        } else if (isImport && isInternal) {
+            typeInt = Constant.TX_IMPORT_INTERNAL;
+            fromWh = otherWh;
+            toWh = userWarehouseId;
+        } else {
+            typeInt = Constant.TX_EXPORT_INTERNAL;
+            fromWh = userWarehouseId;
+            toWh = otherWh;
         }
 
         String[] productIds = request.getParameterValues("productId");
@@ -412,16 +463,31 @@ public class TransactionServlet extends HttpServlet {
             }
         }
 
+        if (errors.isEmpty() && !details.isEmpty()) {
+            InventoryBalanceDAO balanceDao = new InventoryBalanceDAO();
+            String stockError = null;
+            if (!isImport && !isInternal) {
+                stockError = balanceDao.checkStockForDetails(userWarehouseId, details);
+            } else if (isImport && isInternal) {
+                stockError = balanceDao.checkStockForDetails(otherWh, details);
+            } else if (!isImport && isInternal) {
+                stockError = balanceDao.checkStockForDetails(userWarehouseId, details);
+            }
+            if (stockError != null) {
+                errors.add(stockError);
+            }
+        }
+
         if (!errors.isEmpty()) {
             request.setAttribute("errors", errors);
-            existing.setTransactionType(typeInt);
-            existing.setFromWarehouseId(fromWh);
-            existing.setToWarehouseId(toWh);
+            request.setAttribute("direction", direction);
+            request.setAttribute("source", source);
+            request.setAttribute("otherWarehouseId", otherWhStr);
             existing.setPartnerId(partnerId);
             existing.setNotes(notes);
             request.setAttribute("tx", existing);
             request.setAttribute("details", details);
-            prepareFormData(request);
+            prepareFormData(request, user);
             request.getRequestDispatcher("/views/transaction/edit-transaction.jsp").forward(request, response);
             return;
         }
@@ -437,7 +503,6 @@ public class TransactionServlet extends HttpServlet {
         tx.setUpdatedBy(user.getUserId());
 
         if (txDao.updateTransaction(tx)) {
-            // Delete old details and re-insert
             TransactionDetailDAO detailDao = new TransactionDetailDAO();
             detailDao.deleteDetailsByTransactionId(txId);
             for (TransactionDetail d : details) {
@@ -449,7 +514,7 @@ public class TransactionServlet extends HttpServlet {
         } else {
             request.setAttribute("errors", List.of("Lỗi khi cập nhật."));
             request.setAttribute("tx", existing);
-            prepareFormData(request);
+            prepareFormData(request, user);
             request.getRequestDispatcher("/views/transaction/edit-transaction.jsp").forward(request, response);
         }
     }
@@ -464,7 +529,6 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // Check daily closing
         java.sql.Date txDate = new java.sql.Date(tx.getTransactionDate().getTime());
         DailyClosingDAO dcDao = new DailyClosingDAO();
         if (dcDao.isDateClosedForTransaction(tx.getFromWarehouseId(), tx.getToWarehouseId(), txDate)) {
@@ -473,20 +537,22 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // Apply inventory balance update
         TransactionDetailDAO detailDao = new TransactionDetailDAO();
         List<TransactionDetail> details = detailDao.getDetailsByTransactionId(txId);
         InventoryBalanceDAO balanceDao = new InventoryBalanceDAO();
         String balanceError = null;
 
         switch (tx.getTransactionType()) {
-            case Constant.TX_TYPE_IMPORT:
+            case Constant.TX_IMPORT_SUPPLIER:
                 balanceError = balanceDao.applyImport(tx.getToWarehouseId(), details, user.getUserId());
                 break;
-            case Constant.TX_TYPE_EXPORT:
+            case Constant.TX_EXPORT_SUPPLIER:
                 balanceError = balanceDao.applyExport(tx.getFromWarehouseId(), details, user.getUserId());
                 break;
-            case Constant.TX_TYPE_TRANSFER:
+            case Constant.TX_IMPORT_INTERNAL:
+                balanceError = balanceDao.applyTransfer(tx.getToWarehouseId(), tx.getFromWarehouseId(), details, user.getUserId());
+                break;
+            case Constant.TX_EXPORT_INTERNAL:
                 balanceError = balanceDao.applyTransfer(tx.getFromWarehouseId(), tx.getToWarehouseId(), details, user.getUserId());
                 break;
         }
@@ -510,7 +576,6 @@ public class TransactionServlet extends HttpServlet {
             return;
         }
 
-        // Check daily closing
         java.sql.Date txDate = new java.sql.Date(tx.getTransactionDate().getTime());
         DailyClosingDAO dcDao = new DailyClosingDAO();
         if (dcDao.isDateClosedForTransaction(tx.getFromWarehouseId(), tx.getToWarehouseId(), txDate)) {
@@ -523,36 +588,11 @@ public class TransactionServlet extends HttpServlet {
         redirect(response, request, "/transaction/details?id=" + txId, "Đã từ chối phiếu.", null);
     }
 
-    private void handleProductsByCategory(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        String catIdStr = request.getParameter("categoryId");
-        StringBuilder json = new StringBuilder("[");
-        if (catIdStr != null && !catIdStr.isEmpty()) {
-            ProductDAO dao = new ProductDAO();
-            var products = dao.getProductsByCategoryForDropdown(Integer.parseInt(catIdStr));
-            for (int i = 0; i < products.size(); i++) {
-                var p = products.get(i);
-                if (i > 0) {
-                    json.append(",");
-                }
-                json.append("{\"productId\":").append(p.getProductId())
-                        .append(",\"productCode\":\"").append(escapeJson(p.getProductCode())).append("\"")
-                        .append(",\"productName\":\"").append(escapeJson(p.getProductName())).append("\"")
-                        .append(",\"unit\":\"").append(escapeJson(p.getUnit() != null ? p.getUnit() : "")).append("\"")
-                        .append("}");
-            }
-        }
-        json.append("]");
-        try (PrintWriter pw = response.getWriter()) {
-            pw.print(json.toString());
-        }
-    }
-
-    private void prepareFormData(HttpServletRequest request) {
+    private void prepareFormData(HttpServletRequest request, User user) {
         request.setAttribute("warehouses", new WarehouseDAO().getAllActiveWarehouses());
         request.setAttribute("categories", new CategoryDAO().getAllCategoriesForDropdown());
         request.setAttribute("partnerList", Constant.PARTNER_LIST);
+        request.setAttribute("userWarehouseId", user.getWarehouseId());
     }
 
     private int parseId(HttpServletRequest req) {
@@ -586,13 +626,6 @@ public class TransactionServlet extends HttpServlet {
         } catch (Exception e) {
             return 0;
         }
-    }
-
-    private String escapeJson(String s) {
-        if (s == null) {
-            return "";
-        }
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "");
     }
 
     private void redirect(HttpServletResponse res, HttpServletRequest req, String path, String success, String error) throws IOException {

@@ -275,17 +275,17 @@ public class InventoryTransactionDAO {
     public String generateTransactionCode(int type) {
         String prefix;
         switch (type) {
-            case Constant.TX_TYPE_IMPORT:
-                prefix = "NH";
+            case Constant.TX_IMPORT_SUPPLIER:
+                prefix = "NH-NCC";
                 break;
-            case Constant.TX_TYPE_EXPORT:
-                prefix = "XH";
+            case Constant.TX_EXPORT_SUPPLIER:
+                prefix = "XH-NCC";
                 break;
-            case Constant.TX_TYPE_TRANSFER:
-                prefix = "CB";
+            case Constant.TX_IMPORT_INTERNAL:
+                prefix = "NH-NB";
                 break;
             default:
-                prefix = "TX";
+                prefix = "XH-NB";
                 break;
         }
         String code = prefix + "-" + new java.text.SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date());

@@ -45,9 +45,10 @@
                     <div><span class="text-gray-500">Mã phiếu:</span> <span class="font-medium text-gray-800 ml-2">${tx.transactionCode}</span></div>
                     <div><span class="text-gray-500">Loại phiếu:</span>
                         <c:choose>
-                            <c:when test="${tx.transactionType == 1}"><span class="ml-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Nhập ngoài</span></c:when>
-                            <c:when test="${tx.transactionType == 2}"><span class="ml-2 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Xuất ngoài</span></c:when>
-                            <c:when test="${tx.transactionType == 3}"><span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Chuyển nội bộ</span></c:when>
+                            <c:when test="${tx.transactionType == 1}"><span class="ml-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Nhập - Nhà cung cấp</span></c:when>
+                            <c:when test="${tx.transactionType == 2}"><span class="ml-2 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Xuất - Nhà cung cấp</span></c:when>
+                            <c:when test="${tx.transactionType == 3}"><span class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">Nhập - Nội bộ</span></c:when>
+                            <c:when test="${tx.transactionType == 4}"><span class="ml-2 px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">Xuất - Nội bộ</span></c:when>
                         </c:choose>
                     </div>
                     <div><span class="text-gray-500">Ngày giao dịch:</span> <span class="font-medium text-gray-800 ml-2"><fmt:formatDate value="${tx.transactionDate}" pattern="dd/MM/yyyy"/></span></div>

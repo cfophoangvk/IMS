@@ -11,6 +11,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 import model.Product;
 import model.User;
 import util.Constant;
@@ -21,7 +22,8 @@ import util.Validator;
     "/product/details",
     "/product/add",
     "/product/edit",
-    "/product/toggle-status"
+    "/product/toggle-status",
+    "/product/categories"
 })
 public class ProductServlet extends HttpServlet {
 
@@ -46,6 +48,9 @@ public class ProductServlet extends HttpServlet {
             } else {
                 handleDetails(request, response);
             }
+            return;
+        } else if (path.equals("/product/categories")) {
+            handleProductsByCategory(request, response);
             return;
         }
 
@@ -252,6 +257,32 @@ public class ProductServlet extends HttpServlet {
         }
     }
 
+    private void handleProductsByCategory(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        String catIdStr = request.getParameter("categoryId");
+        StringBuilder json = new StringBuilder("[");
+        if (catIdStr != null && !catIdStr.isEmpty()) {
+            ProductDAO dao = new ProductDAO();
+            var products = dao.getProductsByCategoryForDropdown(Integer.parseInt(catIdStr));
+            for (int i = 0; i < products.size(); i++) {
+                var p = products.get(i);
+                if (i > 0) {
+                    json.append(",");
+                }
+                json.append("{\"productId\":").append(p.getProductId())
+                        .append(",\"productCode\":\"").append(escapeJson(p.getProductCode())).append("\"")
+                        .append(",\"productName\":\"").append(escapeJson(p.getProductName())).append("\"")
+                        .append(",\"unit\":\"").append(escapeJson(p.getUnit() != null ? p.getUnit() : "")).append("\"")
+                        .append("}");
+            }
+        }
+        json.append("]");
+        try (PrintWriter pw = response.getWriter()) {
+            pw.print(json.toString());
+        }
+    }
+
     private void handleToggle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         new ProductDAO().toggleProductStatus(parseId(request), getLoggedUser(request).getUserId());
         redirect(response, request, "/product/list", "Cập nhật trạng thái thành công!", null);
@@ -288,6 +319,13 @@ public class ProductServlet extends HttpServlet {
         } catch (Exception e) {
             return 1;
         }
+    }
+
+    private String escapeJson(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "");
     }
 
     private void redirect(HttpServletResponse res, HttpServletRequest req, String path, String success, String error) throws IOException {

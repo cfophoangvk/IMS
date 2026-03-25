@@ -69,6 +69,18 @@
                             </div>
                         </div>
 
+                        <c:if test="${not empty warehouseName}">
+                            <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                                <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-warehouse text-red-600"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase tracking-wider font-medium">Kho làm việc</p>
+                                    <p class="text-gray-900 font-medium mt-0.5">${warehouseName}</p>
+                                </div>
+                            </div>
+                        </c:if>
+
                         <div class="flex items-center p-4 bg-gray-50 rounded-lg">
                             <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center mr-4">
                                 <i class="fas fa-circle-check text-indigo-600"></i>

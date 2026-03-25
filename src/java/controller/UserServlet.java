@@ -2,6 +2,7 @@ package controller;
 
 import dal.RoleDAO;
 import dal.UserDAO;
+import dal.WarehouseDAO;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -393,8 +394,12 @@ public class UserServlet extends HttpServlet {
     private void handleViewProfile(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         User loggedUser = getLoggedUser(request);
         UserDAO userDAO = new UserDAO();
+        WarehouseDAO wdao = new WarehouseDAO();
         User fullUser = userDAO.getUserById(loggedUser.getUserId());
+        String warehouseName = wdao.getWarehouseNameById(fullUser.getWarehouseId());
+        
         request.setAttribute("profileUser", fullUser);
+        request.setAttribute("warehouseName", warehouseName);
         request.getRequestDispatcher("/views/user/view-profile.jsp").forward(request, response);
     }
 

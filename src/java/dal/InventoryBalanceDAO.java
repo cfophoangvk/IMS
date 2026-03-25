@@ -136,4 +136,18 @@ public class InventoryBalanceDAO {
             }
         }
     }
+
+    public String checkStockForDetails(int warehouseId, java.util.List<TransactionDetail> details) {
+        for (TransactionDetail d : details) {
+            BigDecimal current = getBalance(warehouseId, d.getProductId());
+            if (current == null || current.compareTo(d.getQuantity()) < 0) {
+                ProductDAO pdao = new ProductDAO();
+                String productCode = pdao.getProductCodeById(d.getProductId());
+                return "Tồn kho không đủ cho sản phẩm (Code: " + productCode
+                        + "). Tồn: " + (current != null ? current.stripTrailingZeros().toPlainString() : "0")
+                        + ", Cần: " + d.getQuantity();
+            }
+        }
+        return null;
+    }
 }

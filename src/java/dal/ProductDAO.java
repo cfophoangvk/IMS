@@ -188,4 +188,19 @@ public class ProductDAO {
         }
         return list;
     }
+    
+    public String getProductCodeById(int productId) {
+        String sql = "SELECT ProductCode FROM Products WHERE ProductId = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("ProductCode");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 }

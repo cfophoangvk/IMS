@@ -81,7 +81,22 @@ public class WarehouseDAO {
         }
         return null;
     }
-
+    
+    public String getWarehouseNameById(int id) {
+        String sql = "SELECT WarehouseName FROM Warehouses WHERE WarehouseId = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getNString("WarehouseName");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
     public int createWarehouse(Warehouse w) {
         String sql = "INSERT INTO Warehouses (WarehouseCode, WarehouseName, Location, Status, CreatedBy, CreatedDate) "
                 + "VALUES (?, ?, ?, 1, ?, GETDATE())";
