@@ -1,9 +1,9 @@
 package controller;
 
-import dal.DailyClosingDAO;
-import dal.WarehouseDAO;
+import dal.*;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,8 +11,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.DailyClosing;
+import model.InventoryTransaction;
 import model.User;
 import util.Constant;
+import util.EmailService;
 
 @WebServlet(name = "DailyClosingServlet", urlPatterns = {
     "/daily-closing/list",
@@ -33,10 +35,10 @@ public class DailyClosingServlet extends HttpServlet {
         String path = request.getServletPath();
         switch (path) {
             case "/daily-closing/list":
-                handleList(request, response);
+                handleList(request, response, user);
                 break;
             case "/daily-closing/add":
-                handleShowAdd(request, response);
+                handleShowAdd(request, response, user);
                 break;
         }
     }
@@ -66,59 +68,87 @@ public class DailyClosingServlet extends HttpServlet {
         return (User) req.getSession().getAttribute(Constant.SESSION_ACCOUNT);
     }
 
-    private void handleList(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Integer warehouseId = parseIntOrNull(request.getParameter("warehouseId"));
+    private void handleList(HttpServletRequest request, HttpServletResponse response, User user) throws ServletException, IOException {
+        int warehouseId = user.getWarehouseId();
         int page = parsePage(request);
 
         DailyClosingDAO dao = new DailyClosingDAO();
         int total = dao.getTotalClosings(warehouseId);
         List<DailyClosing> closings = dao.getAllClosings(warehouseId, page, Constant.PAGE_SIZE);
 
+        // Get warehouse name for display
+        String warehouseName = new WarehouseDAO().getWarehouseNameById(warehouseId);
+
         request.setAttribute("closings", closings);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", (int) Math.ceil((double) total / Constant.PAGE_SIZE));
-        request.setAttribute("filterWarehouseId", warehouseId);
-        request.setAttribute("warehouses", new WarehouseDAO().getAllActiveWarehouses());
+        request.setAttribute("warehouseName", warehouseName);
         request.getRequestDispatcher("/views/daily-closing/list-daily-closing.jsp").forward(request, response);
     }
 
-    private void handleShowAdd(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.setAttribute("warehouses", new WarehouseDAO().getAllActiveWarehouses());
+    private void handleShowAdd(HttpServletRequest request, HttpServletResponse response, User user) throws ServletException, IOException {
+        int warehouseId = user.getWarehouseId();
+        String warehouseName = new WarehouseDAO().getWarehouseNameById(warehouseId);
+        request.setAttribute("warehouseName", warehouseName);
+        request.setAttribute("userWarehouseId", warehouseId);
 
-        // If warehouse and date selected, load history
-        String whStr = request.getParameter("warehouseId");
         String dateStr = request.getParameter("closingDate");
 
-        if (whStr != null && !whStr.isEmpty() && dateStr != null && !dateStr.isEmpty()) {
-            int warehouseId = Integer.parseInt(whStr);
+        if (dateStr != null && !dateStr.isEmpty()) {
             java.sql.Date date = java.sql.Date.valueOf(dateStr);
-            DailyClosingDAO dao = new DailyClosingDAO();
-            List<DailyClosing> history = dao.getClosingsByDate(warehouseId, date);
-            request.setAttribute("history", history);
-            request.setAttribute("historyCount", history.size());
-            request.setAttribute("selectedWarehouseId", warehouseId);
+            DailyClosingDAO dcDao = new DailyClosingDAO();
             request.setAttribute("selectedDate", dateStr);
+
+            // Check if already closed (IsClosed = 1)
+            boolean isClosed = dcDao.isDateClosed(warehouseId, date);
+            request.setAttribute("isClosed", isClosed);
+
+            if (isClosed) {
+                // Already closed - show message
+                request.setAttribute("closedMessage", "Đã chốt sổ ngày " + new SimpleDateFormat("dd/MM/yyyy").format(date));
+            } else {
+                // Not closed - show transactions and check for pending
+                InventoryTransactionDAO txDao = new InventoryTransactionDAO();
+                List<InventoryTransaction> transactions = txDao.getTransactionsByWarehouseAndDate(warehouseId, date);
+                int pendingCount = txDao.countPendingByWarehouseAndDate(warehouseId, date);
+
+                request.setAttribute("transactions", transactions);
+                request.setAttribute("pendingCount", pendingCount);
+            }
         }
 
         request.getRequestDispatcher("/views/daily-closing/add-daily-closing.jsp").forward(request, response);
     }
 
     private void handleAdd(HttpServletRequest request, HttpServletResponse response, User user) throws IOException {
-        String whStr = request.getParameter("warehouseId");
+        int warehouseId = user.getWarehouseId();
         String dateStr = request.getParameter("closingDate");
 
-        if (whStr == null || whStr.isEmpty() || dateStr == null || dateStr.isEmpty()) {
-            redirect(response, request, "/daily-closing/add", null, "Vui lòng chọn kho và ngày.");
+        if (dateStr == null || dateStr.isEmpty()) {
+            redirect(response, request, "/daily-closing/add", null, "Vui lòng chọn ngày.");
             return;
         }
 
-        int warehouseId = Integer.parseInt(whStr);
         java.sql.Date date = java.sql.Date.valueOf(dateStr);
+        DailyClosingDAO dcDao = new DailyClosingDAO();
 
-        DailyClosingDAO dao = new DailyClosingDAO();
+        // Check if already closed
+        if (dcDao.isDateClosed(warehouseId, date)) {
+            redirect(response, request, "/daily-closing/add", null, "Ngày này đã được chốt sổ.");
+            return;
+        }
+
+        // Check for pending transactions
+        InventoryTransactionDAO txDao = new InventoryTransactionDAO();
+        int pendingCount = txDao.countPendingByWarehouseAndDate(warehouseId, date);
+        if (pendingCount > 0) {
+            redirect(response, request, "/daily-closing/add?closingDate=" + dateStr, null,
+                    "Vẫn còn " + pendingCount + " phiếu chưa duyệt. Vui lòng duyệt hết trước khi chốt sổ.");
+            return;
+        }
 
         // Count products in warehouse
-        int totalProducts = dao.countProductsInWarehouse(warehouseId);
+        int totalProducts = dcDao.countProductsInWarehouse(warehouseId);
 
         DailyClosing dc = new DailyClosing();
         dc.setWarehouseId(warehouseId);
@@ -126,9 +156,16 @@ public class DailyClosingServlet extends HttpServlet {
         dc.setTotalProducts(totalProducts);
         dc.setCreatedBy(user.getUserId());
 
-        int id = dao.createClosing(dc);
+        int id = dcDao.createClosing(dc);
         if (id > 0) {
-            redirect(response, request, "/daily-closing/list", "Chốt sổ thành công!", null);
+            // Send email notification to all employees in this warehouse
+            String warehouseName = new WarehouseDAO().getWarehouseNameById(warehouseId);
+            List<InventoryTransaction> transactions = txDao.getTransactionsByWarehouseAndDate(warehouseId, date);
+            List<String> emails = new UserDAO().getEmployeeEmailsByWarehouse(warehouseId);
+            String formattedDate = new SimpleDateFormat("dd/MM/yyyy").format(date);
+            EmailService.sendDailyClosingNotification(emails, warehouseName, formattedDate, transactions);
+
+            redirect(response, request, "/daily-closing/list", "Chốt sổ thành công! Email thông báo đã được gửi.", null);
         } else {
             redirect(response, request, "/daily-closing/add", null, "Lỗi khi chốt sổ.");
         }
@@ -138,14 +175,6 @@ public class DailyClosingServlet extends HttpServlet {
         int closingId = Integer.parseInt(request.getParameter("id"));
         new DailyClosingDAO().toggleClosed(closingId, user.getUserId());
         redirect(response, request, "/daily-closing/list", "Cập nhật trạng thái thành công!", null);
-    }
-
-    private Integer parseIntOrNull(String s) {
-        try {
-            return s != null && !s.isEmpty() ? Integer.parseInt(s) : null;
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     private int parsePage(HttpServletRequest req) {
@@ -158,8 +187,13 @@ public class DailyClosingServlet extends HttpServlet {
     }
 
     private void redirect(HttpServletResponse res, HttpServletRequest req, String path, String success, String error) throws IOException {
-        String base = req.getContextPath() + path + "?";
+        String base = req.getContextPath() + path;
         try {
+            if (path.contains("?")) {
+                base += "&";
+            } else {
+                base += "?";
+            }
             if (success != null) {
                 res.sendRedirect(base + "success=" + URLEncoder.encode(success, "UTF-8"));
             } else {

@@ -208,8 +208,8 @@ public class TransactionServlet extends HttpServlet {
     }
 
     private void handleAdd(HttpServletRequest request, HttpServletResponse response, User user) throws ServletException, IOException {
-        String direction = request.getParameter("direction"); // "import" or "export"
-        String source = request.getParameter("source");       // "supplier" or "internal"
+        String direction = request.getParameter("direction"); // "import", "export"
+        String source = request.getParameter("source");       // "supplier", "internal"
         String dateStr = request.getParameter("transactionDate");
         String otherWhStr = request.getParameter("otherWarehouseId");
         String partnerIdStr = request.getParameter("partnerId");
@@ -261,6 +261,14 @@ public class TransactionServlet extends HttpServlet {
             typeInt = Constant.TX_EXPORT_INTERNAL;
             fromWh = userWarehouseId;
             toWh = otherWh;
+        }
+
+        if (errors.isEmpty()) {
+            DailyClosingDAO dcDao = new DailyClosingDAO();
+            java.sql.Date sqlDate = java.sql.Date.valueOf(dateStr);
+            if (dcDao.isDateClosedForTransaction(fromWh, toWh, sqlDate)) {
+                errors.add("Không thể thêm phiếu: Ngày giao dịch đã chốt sổ ở kho tương ứng.");
+            }
         }
 
         String[] productIds = request.getParameterValues("productId");
@@ -433,6 +441,14 @@ public class TransactionServlet extends HttpServlet {
             typeInt = Constant.TX_EXPORT_INTERNAL;
             fromWh = userWarehouseId;
             toWh = otherWh;
+        }
+
+        if (errors.isEmpty()) {
+            DailyClosingDAO dcDao = new DailyClosingDAO();
+            java.sql.Date sqlDate = java.sql.Date.valueOf(dateStr);
+            if (dcDao.isDateClosedForTransaction(fromWh, toWh, sqlDate)) {
+                errors.add("Không thể lưu: Ngày giao dịch đã chốt sổ ở kho tương ứng.");
+            }
         }
 
         String[] productIds = request.getParameterValues("productId");

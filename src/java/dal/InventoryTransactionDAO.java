@@ -291,4 +291,49 @@ public class InventoryTransactionDAO {
         String code = prefix + "-" + new java.text.SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date());
         return code;
     }
+
+    public List<InventoryTransaction> getTransactionsByWarehouseAndDate(int warehouseId, java.sql.Date date) {
+        List<InventoryTransaction> list = new ArrayList<>();
+        String sql = buildJoinSql()
+                + "WHERE t.Status = 1 AND CAST(t.TransactionDate AS DATE) = ? "
+                + "AND (t.FromWarehouseId = ? OR t.ToWarehouseId = ?) "
+                + "ORDER BY t.TransactionId DESC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, date);
+            ps.setInt(2, warehouseId);
+            ps.setInt(3, warehouseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    InventoryTransaction t = mapResultSet(rs);
+                    if (t.getPartnerId() > 0) {
+                        t.setPartnerName(Constant.PARTNER_LIST.getOrDefault(t.getPartnerId(), ""));
+                    }
+                    list.add(t);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public int countPendingByWarehouseAndDate(int warehouseId, java.sql.Date date) {
+        String sql = "SELECT COUNT(*) FROM InventoryTransactions t "
+                + "WHERE t.Status = 1 AND CAST(t.TransactionDate AS DATE) = ? "
+                + "AND (t.FromWarehouseId = ? OR t.ToWarehouseId = ?) "
+                + "AND t.ApprovalStatus = 0";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDate(1, date);
+            ps.setInt(2, warehouseId);
+            ps.setInt(3, warehouseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

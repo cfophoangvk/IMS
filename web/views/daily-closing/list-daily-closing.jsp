@@ -9,7 +9,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Chốt sổ ngày</h1>
+                        <h1 class="text-2xl font-bold text-gray-900">Chốt sổ kho ${warehouseName}</h1>
                         <p class="text-sm text-gray-500 mt-1">Danh sách các ngày đã chốt sổ</p>
                     </div>
                     <a href="${pageContext.request.contextPath}/daily-closing/add"
@@ -35,21 +35,7 @@
             </c:if>
 
             <!-- Filter -->
-            <div class="bg-white rounded-lg shadow-sm border p-4 mb-6">
-                <form action="${pageContext.request.contextPath}/daily-closing/list" method="GET" class="flex flex-wrap gap-3">
-                    <div class="w-64">
-                        <select name="warehouseId" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
-                            <option value="">-- Tất cả kho --</option>
-                            <c:forEach var="w" items="${warehouses}">
-                                <option value="${w.warehouseId}" ${filterWarehouseId == w.warehouseId ? 'selected' : ''}>${w.warehouseCode} - ${w.warehouseName}</option>
-                            </c:forEach>
-                        </select>
-                    </div>
-                    <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium">
-                        <i class="fas fa-filter mr-2"></i>Lọc
-                    </button>
-                </form>
-            </div>
+            <!-- Removed filter as it is now locked to user warehouse -->
 
             <!-- Table -->
             <div class="bg-white rounded-lg shadow-sm border overflow-hidden">

@@ -237,4 +237,20 @@ public class UserDAO {
         }
         return null;
     }
+
+    public List<String> getEmployeeEmailsByWarehouse(int warehouseId) {
+        List<String> emails = new ArrayList<>();
+        String sql = "SELECT Email FROM Users WHERE WarehouseId = ? AND Status = 1 AND Email IS NOT NULL AND Email != ''";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, warehouseId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    emails.add(rs.getString("Email"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return emails;
+    }
 }
