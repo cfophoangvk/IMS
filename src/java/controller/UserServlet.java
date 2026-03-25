@@ -87,14 +87,17 @@ public class UserServlet extends HttpServlet {
             case "/user/send-email":
                 handleSendEmail(request, response);
                 break;
+            default:
+                request.getRequestDispatcher("/views/error/404.jsp").forward(request, response);
+                break;
         }
     }
 
-    private boolean checkITAdmin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private boolean checkITAdmin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         User loggedUser = (User) session.getAttribute(Constant.SESSION_ACCOUNT);
         if (loggedUser == null || loggedUser.getRoleId() != Constant.ROLE_IT_ADMIN) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return false;
         }
         return true;
@@ -355,7 +358,7 @@ public class UserServlet extends HttpServlet {
 
     private void handleSendEmail(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String[] userIdsStr = request.getParameterValues("userIds");
-        
+
         if (userIdsStr == null || userIdsStr.length == 0) {
             response.sendRedirect(request.getContextPath() + "/user/list?error=" + java.net.URLEncoder.encode("Vui lòng chọn ít nhất một người dùng.", "UTF-8"));
             return;
@@ -397,7 +400,7 @@ public class UserServlet extends HttpServlet {
         WarehouseDAO wdao = new WarehouseDAO();
         User fullUser = userDAO.getUserById(loggedUser.getUserId());
         String warehouseName = wdao.getWarehouseNameById(fullUser.getWarehouseId());
-        
+
         request.setAttribute("profileUser", fullUser);
         request.setAttribute("warehouseName", warehouseName);
         request.getRequestDispatcher("/views/user/view-profile.jsp").forward(request, response);

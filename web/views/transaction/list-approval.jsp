@@ -37,7 +37,7 @@
                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                     </div>
                     <div class="w-48">
-                        <select name="type" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
+                        <select name="type" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
                             <option value="">-- Loại phiếu --</option>
                             <option value="1" ${filterType == 1 ? 'selected' : ''}>Nhập - Nhà cung cấp</option>
                             <option value="2" ${filterType == 2 ? 'selected' : ''}>Xuất - Nhà cung cấp</option>
@@ -107,7 +107,14 @@
                                 </tr>
                             </c:forEach>
                             <c:if test="${empty transactions}">
-                                <tr><td colspan="8" class="px-4 py-8 text-center text-gray-400"><i class="fas fa-inbox text-4xl mb-3 block"></i>Không có phiếu nào chờ duyệt</td></tr>
+                                <tr>
+                                    <td colspan="8" class="px-4 py-8 text-center text-gray-400">
+                                        <div class="flex justify-center items-center gap-3">
+                                            <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                                            <span>Không có phiếu nào chờ duyệt</span>
+                                        </div>
+                                    </td>
+                                </tr>
                             </c:if>
                         </tbody>
                     </table>

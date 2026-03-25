@@ -85,10 +85,10 @@ public class WarehouseServlet extends HttpServlet {
         }
     }
 
-    private boolean checkSystemAdmin(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private boolean checkSystemAdmin(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         User user = getLoggedUser(request);
         if (user == null || user.getRoleId() != Constant.ROLE_SYSTEM_ADMIN) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return false;
         }
         return true;

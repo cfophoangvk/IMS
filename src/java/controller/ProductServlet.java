@@ -40,7 +40,7 @@ public class ProductServlet extends HttpServlet {
 
         if (path.equals("/product/list") || path.equals("/product/details")) {
             if (!Validator.hasRole(user.getRoleId(), Constant.PRODUCT_VIEWER_ROLES)) {
-                response.sendRedirect(request.getContextPath() + "/dashboard");
+                request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                 return;
             }
             if (path.equals("/product/list")) {
@@ -55,7 +55,7 @@ public class ProductServlet extends HttpServlet {
         }
 
         if (!Validator.hasRole(user.getRoleId(), Constant.PRODUCT_EDITOR_ROLES)) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
         switch (path) {
@@ -83,7 +83,7 @@ public class ProductServlet extends HttpServlet {
 
         if (path.equals("/product/toggle-status")) {
             if (user.getRoleId() != Constant.ROLE_SYSTEM_ADMIN) {
-                response.sendRedirect(request.getContextPath() + "/dashboard");
+                request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                 return;
             }
             handleToggle(request, response);
@@ -91,7 +91,7 @@ public class ProductServlet extends HttpServlet {
         }
 
         if (!Validator.hasRole(user.getRoleId(), Constant.PRODUCT_EDITOR_ROLES)) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
         switch (path) {

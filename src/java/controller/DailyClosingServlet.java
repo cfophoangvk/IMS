@@ -28,7 +28,7 @@ public class DailyClosingServlet extends HttpServlet {
             throws ServletException, IOException {
         User user = getLoggedUser(request);
         if (user == null || user.getRoleId() != Constant.ROLE_MANAGER) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
 
@@ -49,7 +49,7 @@ public class DailyClosingServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         User user = getLoggedUser(request);
         if (user == null || user.getRoleId() != Constant.ROLE_MANAGER) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
 

@@ -37,7 +37,7 @@ public class CategoryServlet extends HttpServlet {
 
         if (path.equals("/category/list") || path.equals("/category/details")) {
             if (!Validator.hasRole(user.getRoleId(), Constant.PRODUCT_VIEWER_ROLES)) {
-                response.sendRedirect(request.getContextPath() + "/dashboard");
+                request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                 return;
             }
             if (path.equals("/category/list")) {
@@ -49,7 +49,7 @@ public class CategoryServlet extends HttpServlet {
         }
 
         if (!isSysAdmin(user)) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
         switch (path) {
@@ -68,7 +68,7 @@ public class CategoryServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         User user = getLoggedUser(request);
         if (user == null || !isSysAdmin(user)) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
 

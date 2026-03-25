@@ -21,7 +21,7 @@ public class RoleServlet extends HttpServlet {
             throws ServletException, IOException {
         User user = (User) request.getSession().getAttribute(Constant.SESSION_ACCOUNT);
         if (user == null || user.getRoleId() != Constant.ROLE_IT_ADMIN) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
 
@@ -38,7 +38,7 @@ public class RoleServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         User user = (User) request.getSession().getAttribute(Constant.SESSION_ACCOUNT);
         if (user == null || user.getRoleId() != Constant.ROLE_IT_ADMIN) {
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
             return;
         }
 

@@ -21,7 +21,7 @@ public class AuthFilter implements Filter {
         HttpSession session = req.getSession();
         
         String path = req.getServletPath();
-        if (path.startsWith("/assets/") || path.startsWith("/auth/") || path.equals("/index.jsp") || path.isEmpty()) {
+        if (path.startsWith("/assets/") || path.startsWith("/auth/") || path.equals("/index.jsp") || path.startsWith("/views/error/") || path.isEmpty()) {
             chain.doFilter(request, response);
             return;
         }

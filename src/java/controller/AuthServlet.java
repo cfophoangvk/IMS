@@ -63,14 +63,14 @@ public class AuthServlet extends HttpServlet {
     }
 
     private void handleShowChangePasswordForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String email = request.getParameter("email").trim();
+        String email = request.getParameter("email");
 
         if (email == null) {
-            request.getRequestDispatcher("/views/auth/login.jsp").forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
 
-        request.setAttribute("email", email);
+        request.setAttribute("email", email.trim());
         request.getRequestDispatcher("/views/auth/change-password.jsp").forward(request, response);
     }
 
@@ -98,22 +98,21 @@ public class AuthServlet extends HttpServlet {
             if (user.isFirstLogin()) {
                 response.sendRedirect(request.getContextPath() + "/auth/change-password?email=" + user.getEmail());
             } else {
-                //TODO: add dashboard
                 switch (user.getRoleId()) {
                     case Constant.ROLE_IT_ADMIN:
-                        response.sendRedirect(request.getContextPath() + "/views/dashboard/it-admin-dashboard.jsp");
+                        response.sendRedirect(request.getContextPath() + "/dashboard/it-admin");
                         break;
                     case Constant.ROLE_SYSTEM_ADMIN:
-                        response.sendRedirect(request.getContextPath() + "/views/dashboard/system-admin-dashboard.jsp");
+                        response.sendRedirect(request.getContextPath() + "/dashboard/system-admin");
                         break;
                     case Constant.ROLE_EMPLOYEE:
-                        response.sendRedirect(request.getContextPath() + "/warehouse/list");
+                        response.sendRedirect(request.getContextPath() + "/transaction/list");
                         break;
                     case Constant.ROLE_MANAGER:
-                        response.sendRedirect(request.getContextPath() + "/views/dashboard/manager-dashboard.jsp");
+                        response.sendRedirect(request.getContextPath() + "/dashboard/manager");
                         break;
                     case Constant.ROLE_BUSINESS_OWNER:
-                        response.sendRedirect(request.getContextPath() + "/views/dashboard/business-owner-dashboard.jsp");
+                        response.sendRedirect(request.getContextPath() + "/dashboard/business-owner");
                         break;
                     default:
                         response.sendRedirect(request.getContextPath() + "/auth/login");

@@ -43,21 +43,21 @@ public class TransactionServlet extends HttpServlet {
         switch (path) {
             case "/transaction/list":
                 if (!Validator.hasRole(user.getRoleId(), Constant.TX_VIEW_ROLES)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleList(request, response, user);
                 break;
             case "/transaction/details":
                 if (!Validator.hasRole(user.getRoleId(), Constant.TX_VIEW_ROLES)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleDetails(request, response, user);
                 break;
             case "/transaction/add":
                 if (!Validator.hasRole(user.getRoleId(), Constant.TX_CREATE_ROLES)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 prepareFormData(request, user);
@@ -65,14 +65,14 @@ public class TransactionServlet extends HttpServlet {
                 break;
             case "/transaction/edit":
                 if (!Validator.hasRole(user.getRoleId(), Constant.TX_CREATE_ROLES)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleShowEdit(request, response, user);
                 break;
             case "/transaction/approval-list":
                 if (user.getRoleId() != Constant.ROLE_MANAGER) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleApprovalList(request, response);
@@ -95,31 +95,34 @@ public class TransactionServlet extends HttpServlet {
         switch (path) {
             case "/transaction/add":
                 if (!Validator.hasRole(user.getRoleId(), Constant.TX_CREATE_ROLES)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleAdd(request, response, user);
                 break;
             case "/transaction/edit":
                 if (!Validator.hasRole(user.getRoleId(), Constant.TX_CREATE_ROLES)) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleEdit(request, response, user);
                 break;
             case "/transaction/approve":
                 if (user.getRoleId() != Constant.ROLE_MANAGER) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleApprove(request, response, user);
                 break;
             case "/transaction/reject":
                 if (user.getRoleId() != Constant.ROLE_MANAGER) {
-                    response.sendRedirect(request.getContextPath() + "/dashboard");
+                    request.getRequestDispatcher("/views/error/403.jsp").forward(request, response);
                     return;
                 }
                 handleReject(request, response, user);
+                break;
+            default:
+                request.getRequestDispatcher("/views/error/404.jsp").forward(request, response);
                 break;
         }
     }
