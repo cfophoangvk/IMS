@@ -30,6 +30,10 @@
                            class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition duration-200">
                             <i class="fas fa-users mr-2"></i> Tạo hàng loạt
                         </a>
+                        <a href="${pageContext.request.contextPath}/user/create-excel"
+                           class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-sm transition duration-200">
+                            <i class="fas fa-file-excel mr-2"></i> Nhập Excel
+                        </a>
                     </div>
                 </div>
             </div>

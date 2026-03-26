@@ -18,16 +18,30 @@ import org.mindrot.jbcrypt.BCrypt;
 import util.Constant;
 import util.EmailService;
 import util.Validator;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.Part;
+import java.io.InputStream;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 
 @WebServlet(name = "UserServlet", urlPatterns = {
     "/user/list",
     "/user/create",
     "/user/create-batch",
+    "/user/create-excel",
     "/user/edit",
     "/user/toggle-status",
     "/user/send-email",
     "/user/profile"
 })
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50 // 50MB
+)
 public class UserServlet extends HttpServlet {
 
     @Override
@@ -53,6 +67,9 @@ public class UserServlet extends HttpServlet {
                     case "/user/create-batch":
                         handleShowCreateBatchForm(request, response);
                         break;
+                    case "/user/create-excel":
+                        handleShowCreateExcelForm(request, response);
+                        break;
                     case "/user/edit":
                         handleShowEditForm(request, response);
                         break;
@@ -77,6 +94,9 @@ public class UserServlet extends HttpServlet {
                 break;
             case "/user/create-batch":
                 handleCreateBatch(request, response);
+                break;
+            case "/user/create-excel":
+                handleCreateExcel(request, response);
                 break;
             case "/user/edit":
                 handleEditUser(request, response);
@@ -271,6 +291,139 @@ public class UserServlet extends HttpServlet {
         request.setAttribute("successCount", successCount);
         request.setAttribute("failCount", failCount);
         request.getRequestDispatcher("/views/user/create-batch.jsp").forward(request, response);
+    }
+
+    private void handleShowCreateExcelForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.getRequestDispatcher("/views/user/create-excel.jsp").forward(request, response);
+    }
+
+    private void handleCreateExcel(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Part filePart = request.getPart("file");
+        if (filePart == null || filePart.getSize() == 0) {
+            request.setAttribute("error", "Vui lòng chọn một file Excel.");
+            request.getRequestDispatcher("/views/user/create-excel.jsp").forward(request, response);
+            return;
+        }
+
+        String fileName = filePart.getSubmittedFileName();
+        if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+            request.setAttribute("error", "Định dạng file không hỗ trợ. Vui lòng tải lên file .xlsx hoặc .xls.");
+            request.getRequestDispatcher("/views/user/create-excel.jsp").forward(request, response);
+            return;
+        }
+
+        List<java.util.Map<String, String>> results = new ArrayList<>();
+        int successCount = 0;
+        int failCount = 0;
+        UserDAO userDAO = new UserDAO();
+
+        try (InputStream inp = filePart.getInputStream(); Workbook workbook = WorkbookFactory.create(inp)) {
+
+            Sheet sheet = workbook.getSheetAt(0);
+            boolean firstRow = true;
+
+            for (Row row : sheet) {
+                //bỏ qua hàng đầu tiên
+                if (firstRow) {
+                    firstRow = false;
+                    continue;
+                }
+
+                if (row.getCell(0) == null || row.getCell(0).getCellType() == Cell.CELL_TYPE_BLANK) {
+                    break;
+                }
+
+                String username = getCellValueAsString(row.getCell(0));
+                String fullName = getCellValueAsString(row.getCell(1));
+                String email = getCellValueAsString(row.getCell(2));
+                String role = getCellValueAsString(row.getCell(3));
+                System.out.println(role);
+
+                java.util.Map<String, String> result = new java.util.HashMap<>();
+                result.put("username", username);
+                result.put("fullName", fullName);
+                result.put("email", email);
+
+                int roleId = getRoleId(role);
+                if (roleId == 0) {
+                    request.setAttribute("error", "Không thể đọc file Excel. Cột \"Vai trò\" không hợp lệ.");
+                    request.getRequestDispatcher("/views/user/create-excel.jsp").forward(request, response);
+                    return;
+                }
+                result.put("roleId", String.valueOf(roleId));
+
+                List<String> errors = validateUserInput(username, fullName, email, result.get("roleId"), 0);
+                if (!errors.isEmpty()) {
+                    result.put("status", "error");
+                    result.put("message", String.join(", ", errors));
+                    failCount++;
+                } else {
+                    String hash = BCrypt.hashpw(Constant.DEFAULT_PASSWORD, BCrypt.gensalt());
+                    User user = new User();
+                    user.setUsername(username.trim());
+                    user.setFullName(fullName.trim());
+                    user.setEmail(email.trim());
+                    user.setRoleId(Integer.parseInt(result.get("roleId")));
+                    user.setPasswordHash(hash);
+                    user.setCreatedBy(getLoggedUser(request).getUserId());
+
+                    int newUserId = userDAO.createUser(user);
+                    if (newUserId > 0) {
+                        result.put("status", "success");
+                        result.put("message", "Tạo thành công");
+                        successCount++;
+                    } else {
+                        result.put("status", "error");
+                        result.put("message", "Lỗi khi lưu vào CSDL (có thể trùng username)");
+                        failCount++;
+                    }
+                }
+                results.add(result);
+            }
+
+            request.setAttribute("results", results);
+            request.setAttribute("successCount", successCount);
+            request.setAttribute("failCount", failCount);
+            request.getRequestDispatcher("/views/user/create-excel.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Không thể đọc file Excel. Vui lòng đảm bảo file đúng định dạng.");
+            request.getRequestDispatcher("/views/user/create-excel.jsp").forward(request, response);
+        }
+    }
+
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        switch (cell.getCellType()) {
+            case Cell.CELL_TYPE_STRING:
+                return cell.getStringCellValue().trim();
+            case Cell.CELL_TYPE_NUMERIC:
+                return String.valueOf(cell.getNumericCellValue()).trim();
+            case Cell.CELL_TYPE_BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
+        }
+    }
+
+    private int getRoleId(String role) {
+        switch (role) {
+            case "IT Admin":
+                return Constant.ROLE_IT_ADMIN;
+            case "System Admin":
+                return Constant.ROLE_SYSTEM_ADMIN;
+            case "Nhân viên":
+                return Constant.ROLE_EMPLOYEE;
+            case "Quản lý":
+                return Constant.ROLE_MANAGER;
+            case "Chủ doanh nghiệp":
+                return Constant.ROLE_BUSINESS_OWNER;
+            default:
+                return 0;
+        }
     }
 
     private void handleShowEditForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

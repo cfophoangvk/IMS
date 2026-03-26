@@ -70,12 +70,10 @@
                                 <a href="${pageContext.request.contextPath}/role/list" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 transition" title="Quản lý vai trò"><i class="fas fa-user-tag mr-1"></i>Vai trò</a>
                             </c:if>
 
-                            <!-- System Admin (2) -->
                             <c:if test="${user.roleId == 2}">
                                 <a href="${pageContext.request.contextPath}/warehouse/list" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 transition"><i class="fas fa-warehouse mr-1"></i>Kho bãi</a>
                             </c:if>
 
-                            <!-- Goods Management (2, 3, 4, 5) -->
                             <c:if test="${user.roleId >= 2}">
                                 <div class="relative group">
                                     <button class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 transition outline-none">
@@ -88,7 +86,6 @@
                                 </div>
                             </c:if>
 
-                            <!-- Transactions (3, 4, 5) -->
                             <c:if test="${user.roleId >= 3}">
                                 <div class="relative group">
                                     <button class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 transition outline-none">
@@ -103,13 +100,11 @@
                                 </div>
                             </c:if>
 
-                            <!-- Daily Closing (4) -->
                             <c:if test="${user.roleId == 4}">
                                 <a href="${pageContext.request.contextPath}/daily-closing/list" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 transition"><i class="fas fa-calendar-check mr-1"></i>Chốt sổ</a>
                             </c:if>
                         </div>
 
-                        <!-- Right Side (User Profile & Logout) -->
                         <div class="flex items-center">
                             <div class="relative group">
                                 <button class="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 transition outline-none">
