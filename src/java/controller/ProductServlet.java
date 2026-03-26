@@ -3,19 +3,37 @@ package controller;
 import dal.CategoryDAO;
 import dal.ProductDAO;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import java.io.PrintWriter;
+import model.Category;
 import model.Product;
 import model.User;
 import util.Constant;
 import util.Validator;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.DataValidation;
+import org.apache.poi.ss.usermodel.DataValidationConstraint;
+import org.apache.poi.ss.usermodel.DataValidationHelper;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.util.CellRangeAddressList;
 
 @WebServlet(name = "ProductServlet", urlPatterns = {
     "/product/list",
@@ -23,8 +41,15 @@ import util.Validator;
     "/product/add",
     "/product/edit",
     "/product/toggle-status",
-    "/product/categories"
+    "/product/categories",
+    "/product/import-excel",
+    "/product/import-excel/template"
 })
+@MultipartConfig(
+        fileSizeThreshold = 1024 * 1024 * 2,
+        maxFileSize = 1024 * 1024 * 10,
+        maxRequestSize = 1024 * 1024 * 50
+)
 public class ProductServlet extends HttpServlet {
 
     @Override
@@ -52,6 +77,9 @@ public class ProductServlet extends HttpServlet {
         } else if (path.equals("/product/categories")) {
             handleProductsByCategory(request, response);
             return;
+        } else if (path.equals("/product/import-excel/template")) {
+            handleDownloadTemplate(request, response);
+            return;
         }
 
         if (!Validator.hasRole(user.getRoleId(), Constant.PRODUCT_EDITOR_ROLES)) {
@@ -65,6 +93,9 @@ public class ProductServlet extends HttpServlet {
                 break;
             case "/product/edit":
                 handleShowEdit(request, response);
+                break;
+            case "/product/import-excel":
+                request.getRequestDispatcher("/views/product/import-excel.jsp").forward(request, response);
                 break;
         }
     }
@@ -100,6 +131,9 @@ public class ProductServlet extends HttpServlet {
                 break;
             case "/product/edit":
                 handleEdit(request, response);
+                break;
+            case "/product/import-excel":
+                handleImportExcel(request, response);
                 break;
         }
     }
@@ -338,6 +372,187 @@ public class ProductServlet extends HttpServlet {
             }
         } catch (Exception e) {
             res.sendRedirect(req.getContextPath() + path);
+        }
+    }
+
+    private void handleDownloadTemplate(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        CategoryDAO categoryDAO = new CategoryDAO();
+        List<Category> categories = categoryDAO.getAllCategoriesForDropdown();
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sản phẩm");
+
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setFontName("Arial");
+        headerFont.setFontHeightInPoints((short) 11);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"Mã sản phẩm", "Tên sản phẩm", "Danh mục", "Đơn vị tính"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        sheet.setColumnWidth(0, 5000);
+        sheet.setColumnWidth(1, 8000);
+        sheet.setColumnWidth(2, 6000);
+        sheet.setColumnWidth(3, 4000);
+
+        if (!categories.isEmpty()) {
+            String[] categoryNames = new String[categories.size()];
+            for (int i = 0; i < categories.size(); i++) {
+                categoryNames[i] = categories.get(i).getCategoryName();
+            }
+
+            DataValidationHelper dvHelper = sheet.getDataValidationHelper();
+            DataValidationConstraint dvConstraint = dvHelper.createExplicitListConstraint(categoryNames);
+            CellRangeAddressList addressList = new CellRangeAddressList(1, 100, 2, 2);
+            DataValidation validation = dvHelper.createValidation(dvConstraint, addressList);
+            validation.setShowErrorBox(true);
+            validation.setErrorStyle(DataValidation.ErrorStyle.STOP);
+            validation.createErrorBox("Lỗi", "Vui lòng chọn danh mục từ danh sách.");
+            sheet.addValidationData(validation);
+        }
+
+        Row sampleRow = sheet.createRow(1);
+        sampleRow.createCell(0).setCellValue("SP-001");
+        sampleRow.createCell(1).setCellValue("Tên sản phẩm mẫu");
+        if (!categories.isEmpty()) {
+            sampleRow.createCell(2).setCellValue(categories.get(0).getCategoryName());
+        }
+        sampleRow.createCell(3).setCellValue("Cái");
+
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=product-template.xlsx");
+
+        try (OutputStream out = response.getOutputStream()) {
+            workbook.write(out);
+        } finally {
+            workbook.close();
+        }
+    }
+
+    private void handleImportExcel(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Part filePart = request.getPart("file");
+        if (filePart == null || filePart.getSize() == 0) {
+            request.setAttribute("error", "Vui lòng chọn một file Excel.");
+            request.getRequestDispatcher("/views/product/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        String fileName = filePart.getSubmittedFileName();
+        if (!fileName.endsWith(".xlsx") && !fileName.endsWith(".xls")) {
+            request.setAttribute("error", "Định dạng file không hỗ trợ. Vui lòng tải lên file .xlsx hoặc .xls.");
+            request.getRequestDispatcher("/views/product/import-excel.jsp").forward(request, response);
+            return;
+        }
+
+        CategoryDAO categoryDAO = new CategoryDAO();
+        List<Category> categories = categoryDAO.getAllCategoriesForDropdown();
+        java.util.Map<String, Integer> categoryMap = new java.util.HashMap<>();
+        for (Category cat : categories) {
+            categoryMap.put(cat.getCategoryName().trim().toLowerCase(), cat.getCategoryId());
+        }
+
+        List<java.util.Map<String, String>> results = new ArrayList<>();
+        int successCount = 0;
+        int failCount = 0;
+        ProductDAO productDAO = new ProductDAO();
+
+        try (InputStream inp = filePart.getInputStream(); Workbook workbook = WorkbookFactory.create(inp)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            boolean firstRow = true;
+
+            for (Row row : sheet) {
+                if (firstRow) {
+                    firstRow = false;
+                    continue;
+                }
+
+                if (row.getCell(0) == null || row.getCell(0).getCellType() == Cell.CELL_TYPE_BLANK) {
+                    break;
+                }
+
+                String productCode = getCellValueAsString(row.getCell(0));
+                String productName = getCellValueAsString(row.getCell(1));
+                String categoryName = getCellValueAsString(row.getCell(2));
+                String unit = getCellValueAsString(row.getCell(3));
+
+                java.util.Map<String, String> result = new java.util.HashMap<>();
+                result.put("productCode", productCode);
+                result.put("productName", productName);
+                result.put("categoryName", categoryName);
+                result.put("unit", unit);
+
+                Integer categoryId = categoryMap.get(categoryName.trim().toLowerCase());
+                if (categoryId == null) {
+                    result.put("status", "error");
+                    result.put("message", "Danh mục \"" + categoryName + "\" không tồn tại hoặc đã bị ẩn.");
+                    failCount++;
+                    results.add(result);
+                    continue;
+                }
+
+                List<String> errors = validateProduct(productCode, productName, String.valueOf(categoryId), 0);
+                if (!errors.isEmpty()) {
+                    result.put("status", "error");
+                    result.put("message", String.join(", ", errors));
+                    failCount++;
+                } else {
+                    Product p = new Product();
+                    p.setProductCode(productCode.trim());
+                    p.setProductName(productName.trim());
+                    p.setCategoryId(categoryId);
+                    p.setUnit(unit != null && !unit.trim().isEmpty() ? unit.trim() : null);
+                    p.setCreatedBy(getLoggedUser(request).getUserId());
+
+                    int newId = productDAO.createProduct(p);
+                    if (newId > 0) {
+                        result.put("status", "success");
+                        result.put("message", "Tạo thành công");
+                        successCount++;
+                    } else {
+                        result.put("status", "error");
+                        result.put("message", "Lỗi khi lưu vào CSDL (có thể trùng mã sản phẩm)");
+                        failCount++;
+                    }
+                }
+                results.add(result);
+            }
+
+            request.setAttribute("results", results);
+            request.setAttribute("successCount", successCount);
+            request.setAttribute("failCount", failCount);
+            request.getRequestDispatcher("/views/product/import-excel.jsp").forward(request, response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Không thể đọc file Excel. Vui lòng đảm bảo file đúng định dạng.");
+            request.getRequestDispatcher("/views/product/import-excel.jsp").forward(request, response);
+        }
+    }
+
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        switch (cell.getCellType()) {
+            case Cell.CELL_TYPE_STRING:
+                return cell.getStringCellValue().trim();
+            case Cell.CELL_TYPE_NUMERIC:
+                double num = cell.getNumericCellValue();
+                if (num == Math.floor(num) && !Double.isInfinite(num)) {
+                    return String.valueOf((long) num);
+                }
+                return String.valueOf(num).trim();
+            case Cell.CELL_TYPE_BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return "";
         }
     }
 }

@@ -84,7 +84,6 @@ CREATE TABLE InventoryTransactions (
     TransactionCode VARCHAR(50) UNIQUE NOT NULL,
     TransactionType TINYINT NOT NULL, -- 1: Nhập ngoài, 2: Xuất ngoài, 3: Nhập nội bộ, 4: Xuất nội bộ
     TransactionDate DATETIME NOT NULL,
-    -- Nếu Nhập: ToWarehouseId có data. Nếu Xuất: FromWarehouseId có data. Nếu Chuyển: Cả 2 có data.
     FromWarehouseId INT NULL FOREIGN KEY REFERENCES Warehouses(WarehouseId),
     ToWarehouseId INT NULL FOREIGN KEY REFERENCES Warehouses(WarehouseId),
     -- PartnerId INT NULL FOREIGN KEY REFERENCES Partners(PartnerId), -- NCC hoặc Khách hàng
@@ -113,7 +112,7 @@ CREATE TABLE TransactionDetails (
     UpdatedDate DATETIME
 );
 
--- Bảng lưu Tồn kho hiện tại (Dùng để View Dashboard và Quản lý hàng tồn kho nhanh chóng)
+-- Bảng lưu Tồn kho hiện tại
 CREATE TABLE InventoryBalances (
     BalanceId INT IDENTITY(1,1) PRIMARY KEY,
     WarehouseId INT FOREIGN KEY REFERENCES Warehouses(WarehouseId),
@@ -161,89 +160,60 @@ INSERT [dbo].[Users] ([UserId], [RoleId], [Username], [PasswordHash], [FullName]
 SET IDENTITY_INSERT [dbo].[Users] OFF
 GO
 
-SET IDENTITY_INSERT [dbo].[Warehouses] ON
-GO
-INSERT INTO Warehouses (WarehouseId, WarehouseCode, WarehouseName, Location, Status, CreatedBy)
-VALUES 
-(1,'KHO-HN-001', N'Kho Tổng Hà Nội', N'KCN Thăng Long, Đông Anh, Hà Nội', 1, 2),
-(2,'KHO-DN-001', N'Kho Đà Nẵng', N'KCN Hòa Khánh, Liên Chiểu, Đà Nẵng', 1, 2),
-(3,'KHO-HCM-001', N'Kho Trung tâm TP.HCM', N'KCN Tân Bình, Quận Tân Bình, TP. Hồ Chí Minh', 1, 2),
-(4,'KHO-HCM-002', N'Kho Linh Trung', N'KCN Linh Trung, Thủ Đức, TP. Hồ Chí Minh', 1, 2),
-(5,'KHO-CT-001', N'Kho Cần Thơ', N'KCN Trà Nóc, Bình Thủy, Cần Thơ', 1, 2),
-(6,'KHO-HP-001', N'Kho Hải Phòng', N'KCN Đình Vũ, Hải An, Hải Phòng', 0, 2),
-(7,'KHO-L-BD01', N'Kho Lạnh Bình Dương', N'KCN VSIP 1, Thuận An, Bình Dương', 1, 3),
-(8,'KHO-NVL-BN01', N'Kho Nguyên Vật Liệu Bắc Ninh', N'KCN Tiên Sơn, Từ Sơn, Bắc Ninh', 1, 3),
-(9,'KHO-TP-HCM03', N'Kho Thành Phẩm Quận 7', N'KCN Tân Thuận, Quận 7, TP.HCM', 1, 3),
-(10,'KHO-KG-DL01', N'Kho Ký Gửi Đà Lạt', N'Phường 11, TP. Đà Lạt, Lâm Đồng', 1, 3),
-(11,'KHO-TD-HN02', N'Kho Trung Chuyển Mỹ Đình', N'Đường Phạm Hùng, Nam Từ Liêm, Hà Nội', 1, 3),
-(12,'KHO-TMP-DN02', N'Kho Tạm Thời Đà Nẵng', N'KCN Liên Chiểu, Đà Nẵng', 1, 3),
-(13,'KHO-DL-HP02', N'Kho Hàng Lỗi Hải Phòng', N'Quận Hải An, Hải Phòng', 1, 3),
-(14,'KHO-VP-VT01', N'Kho Vật Phẩm Vũng Tàu', N'KCN Phú Mỹ, Bà Rịa - Vũng Tàu', 1, 3);
-SET IDENTITY_INSERT [dbo].[Warehouses] OFF
+INSERT INTO Warehouses (WarehouseCode, WarehouseName, Location, Status, CreatedBy) VALUES
+('KHO-HN1', N'Kho Tổng Hà Nội', N'KCN Thăng Long, Đông Anh, Hà Nội', 1, 1),
+('KHO-HCM', N'Kho Trung tâm TP.HCM', N'KCN Tân Bình, Quận Tân Phú, TP.HCM', 1, 1),
+('KHO-DN', N'Kho Đà Nẵng', N'KCN Hòa Khánh, Quận Liên Chiểu, Đà Nẵng', 1, 1),
+('KHO-CT', N'Kho Cần Thơ', N'KCN Trà Nóc, Quận Bình Thủy, Cần Thơ', 1, 1);
 GO
 
-SET IDENTITY_INSERT [dbo].[Categories] ON
-GO
-INSERT INTO Categories (CategoryId, CategoryName, Status, CreatedBy)
-VALUES 
-(1, N'Điện tử - Điện lạnh', 1, 1),
-(2, N'Đồ gia dụng', 1, 1),
-(3, N'Văn phòng phẩm', 1, 1),
-(4, N'Thực phẩm đóng gói', 1, 1),
-(5, N'Vật liệu xây dựng', 1, 1),
-(6, N'Hóa chất công nghiệp', 1, 1),
-(7, N'Thời trang - May mặc', 1, 1),
-(8, N'Mẹ và Bé', 1, 1),
-(9, N'Sức khỏe - Sắc đẹp', 1, 1),
-(10, N'Đồ uống - Giải khát', 1, 1),
-(11, N'Phụ tùng - Linh kiện', 1, 1),
-(12, N'Thiết bị bảo hộ lao động', 1, 1),
-(13, N'Hàng thanh lý', 0, 1);
-SET IDENTITY_INSERT [dbo].[Categories] OFF
+INSERT INTO Categories (CategoryName, Status, CreatedBy) VALUES
+(N'Xi măng', 1, 2),
+(N'Cát - Đá xây dựng', 1, 3),
+(N'Gạch xây', 1, 2),
+(N'Sắt - Thép', 1, 3),
+(N'Sơn nước & Chống thấm', 1, 2),
+(N'Thiết bị vệ sinh', 1, 3),
+(N'Gạch ốp lát', 1, 2),
+(N'Vật tư điện nước', 1, 3);
 GO
 
-SET IDENTITY_INSERT [dbo].[Products] ON
-GO
-INSERT INTO Products (ProductId, ProductCode, ProductName, CategoryId, Unit, Status, CreatedBy)
-VALUES 
-(1,'DT-IP15-01', N'Điện thoại iPhone 15 Pro', 1, N'Cái', 1, 2),
-(2,'DT-SS-TVS65', N'Smart Tivi Samsung 65 inch', 1, N'Cái', 1, 3),
-(3,'DT-LG-MT01', N'Máy giặt LG 9kg', 1, N'Cái', 1, 2),
-(4,'GD-BL-SH01', N'Máy xay sinh tố Sunhouse', 2, N'Bộ', 1, 3),
-(5,'GD-NC-KSH02', N'Nồi cơm điện Kangaroo', 2, N'Cái', 1, 2),
-(6,'VPP-GIAY-A4', N'Giấy in A4 Double A', 3, N'Ram', 1, 3),
-(7,'VPP-BUT-BI01', N'Bút bi Thiên Long TL08', 3, N'Hộp', 1, 2),
-(8,'TP-MI-HAO01', N'Mì tôm Hảo Hảo', 4, N'Thùng', 1, 2),
-(9,'TP-GAO-ST25', N'Gạo ST25', 4, N'Túi', 1, 3),
-(10,'VLXD-XM-HOA', N'Xi măng Hoàng Thạch', 5, N'Bao', 1, 3),
-(11,'VLXD-THEP-V', N'Thép phi 16', 5, N'Cây', 1, 2),
-(12,'HC-DUNG-MOI', N'Dung môi công nghiệp A', 6, N'Thùng phuy', 1, 2),
-(13,'HC-CHAT-TAY', N'Chất tẩy rửa chuyên dụng', 6, N'Can', 1, 3),
-(14,'DT-LT-DELL01', N'Laptop Dell Vostro 3510', 1, N'Cái', 1, 7),
-(15,'DT-TL-PANA01', N'Tủ lạnh Panasonic Inverter', 1, N'Cái', 1, 7),
-(16,'DT-IP13-OLD', N'Điện thoại iPhone 13 Pro', 1, N'Cái', 0, 7),
-(17,'GD-QUAT-SENKO', N'Quạt cây Senko', 2, N'Cái', 1, 7),
-(18,'GD-LVS-SHARP', N'Lò vi sóng Sharp R-205VN-S', 2, N'Cái', 1, 7),
-(19,'VPP-GHIM-KW', N'Dập ghim KWTrio', 3, N'Cái', 1, 7),
-(20,'VPP-BIA-CONG', N'Bìa còng Plus A4', 3, N'Cái', 1, 7),
-(21,'TP-SUA-TH', N'Sữa tươi tiệt trùng TH True Milk', 4, N'Thùng', 1, 7),
-(22,'TT-AO-SOMI-ANP', N'Áo sơ mi nam An Phước', 7, N'Cái', 1, 7),
-(23,'TT-QUAN-JEAN-LV', N'Quần Jean Levis 501', 7, N'Cái', 1, 7),
-(24,'TT-GIAY-BITIS', N'Giày thể thao Bitis Hunter X', 7, N'Đôi', 1, 7),
-(25,'MB-BIM-BOBBY', N'Bỉm tã quần Bobby size L', 8, N'Bịch', 1, 7),
-(26,'MB-SUA-VNM', N'Sữa bột Vinamilk Dielac Alpha', 8, N'Lon', 1, 7),
-(27,'MB-BINH-COMO', N'Bình sữa Comotomo 250ml', 8, N'Cái', 1, 7),
-(28,'SK-SRM-CETA', N'Sữa rửa mặt Cetaphil', 9, N'Chai', 1, 7),
-(29,'SK-KCN-BIORE', N'Kem chống nắng Biore UV', 9, N'Tuýp', 1, 7),
-(30,'SK-DAUGOI-SUN', N'Dầu gội Sunsilk mềm mượt diệu kỳ', 9, N'Chai', 1, 7),
-(31,'DU-COCA-ZERO', N'Coca Cola Zero Sugar', 10, N'Thùng', 1, 7),
-(32,'DU-CAFE-G7', N'Cà phê hòa tan G7 Trung Nguyên', 10, N'Hộp', 1, 7),
-(33,'DU-NUOC-AQ', N'Nước tinh khiết Aquafina 500ml', 10, N'Thùng', 1, 7),
-(34,'PT-BUG-NGK', N'Bugi NGK Iridium', 11, N'Cái', 1, 7),
-(35,'PT-LOC-NHOT', N'Lọc nhớt xe máy', 11, N'Cái', 1, 7),
-(36,'PT-ACQUY-GS', N'Bình ắc quy GS 12V', 11, N'Cái', 1, 7),
-(37,'BH-NON-3M', N'Nón bảo hộ 3M', 12, N'Cái', 1, 7),
-(38,'BH-GANG-TAY', N'Găng tay bảo hộ chống cắt', 12, N'Đôi', 1, 7),
-(39,'BH-KINH-CHONG', N'Kính chống bụi Sperian', 12, N'Cái', 1, 7);
-SET IDENTITY_INSERT [dbo].[Products] OFF
-GO
+INSERT INTO Products (ProductCode, ProductName, CategoryId, Unit, Status, CreatedBy) VALUES
+('XM-HT1', N'Xi măng Hà Tiên 1 PCB40', 1, N'Bao', 1, 2),
+('XM-HOL', N'Xi măng Holcim Power-S', 1, N'Bao', 1, 2),
+('XM-INSEE', N'Xi măng INSEE Wall Pro', 1, N'Bao', 1, 2),
+
+('CAT-VANG', N'Cát vàng xây tô', 2, N'm³', 1, 3),
+('CAT-DEN', N'Cát đen san lấp', 2, N'm³', 1, 3),
+('DA-1X2', N'Đá 1x2 (dùng cho bê tông)', 2, N'm³', 1, 3),
+('DA-4X6', N'Đá 4x6 (dùng cho móng)', 2, N'm³', 1, 3),
+
+('GACH-4LO', N'Gạch Tuynel 4 lỗ (8x8x18cm)', 3, N'Viên', 1, 2),
+('GACH-2LO', N'Gạch Tuynel 2 lỗ (5.5x9.5x20.5cm)', 3, N'Viên', 1, 2),
+('GACH-DAC', N'Gạch đặc', 3, N'Viên', 1, 2),
+('GACH-AAC', N'Gạch bê tông khí chưng áp (AAC) 600x200x100mm', 3, N'Viên', 1, 2),
+
+('THEP-D6-HV', N'Thép cuộn phi 6 Hòa Phát', 4, N'Kg', 1, 3),
+('THEP-D10-PMN', N'Thép cây vằn D10 Pomina', 4, N'Cây', 1, 3),
+('THEP-HOP-50X100', N'Thép hộp 50x100x1.8mm', 4, N'Cây', 1, 3),
+('THEP-V5', N'Thép V5', 4, N'Cây', 1, 3),
+
+('SON-DULUX-NT', N'Sơn nội thất Dulux EasyClean lau chùi hiệu quả (Lon 5L)', 5, N'Lon', 1, 7),
+('SON-KOVA-CT11A', N'Sơn chống thấm Kova CT-11A Plus (Thùng 20Kg)', 5, N'Thùng', 1, 7),
+('SON-JOTUN-NGOAI', N'Sơn ngoại thất Jotun Jotashield (Thùng 15L)', 5, N'Thùng', 1, 7),
+('BOT-TRET-JOTUN', N'Bột trét tường nội thất Jotun (Bao 40Kg)', 5, N'Bao', 1, 7),
+
+('BC-INAX-C108', N'Bồn cầu 2 khối INAX C-108VAN', 6, N'Bộ', 1, 7),
+('LAVABO-TOTO-LHT300', N'Chậu rửa mặt (Lavabo) TOTO LHT300CR', 6, N'Cái', 1, 7),
+('VOI-SEN-INAX-1', N'Vòi sen tắm nóng lạnh INAX BFV-1403S-4C', 6, N'Bộ', 1, 7),
+('GUONG-TOTO-1', N'Gương phòng tắm TOTO YM4560A', 6, N'Cái', 1, 7),
+
+('GOL-VIGLA-60', N'Gạch lát nền Viglacera 60x60 ECO-622', 7, N'Hộp', 1, 7),
+('GOL-PRIME-80', N'Gạch lát nền Prime 80x80 8221', 7, N'Hộp', 1, 7),
+('GOT-TAICERA-3060', N'Gạch ốp tường Taicera 30x60 G63728', 7, N'Hộp', 1, 7),
+('KEO-DANGACH', N'Keo dán gạch WeberTai Vis', 7, N'Bao', 1, 7),
+
+('ONG-PVC-D21', N'Ống nhựa PVC Bình Minh D21', 8, N'Cây', 1, 7),
+('ONG-PPR-D25', N'Ống nhựa chịu nhiệt PPR Vesbo D25', 8, N'Cây', 1, 7),
+('DAYDIEN-CADIVI-2.5', N'Dây điện Cadivi CV 2.5 (Cuộn 100m)', 8, N'Cuộn', 1, 7),
+('CB-PANA-1P20A', N'Aptomat (CB) Panasonic 1P 20A', 8, N'Cái', 1, 7);

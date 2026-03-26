@@ -13,10 +13,16 @@
                     </div>
                     <c:set var="u" value="${sessionScope.account}"/>
                     <c:if test="${u.roleId == 2 or u.roleId == 4}">
-                        <a href="${pageContext.request.contextPath}/product/add"
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
-                            <i class="fas fa-plus mr-2"></i> Thêm sản phẩm
-                        </a>
+                        <div class="flex gap-2">
+                            <a href="${pageContext.request.contextPath}/product/import-excel"
+                               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+                                <i class="fas fa-file-excel mr-2"></i> Nhập Excel
+                            </a>
+                            <a href="${pageContext.request.contextPath}/product/add"
+                               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+                                <i class="fas fa-plus mr-2"></i> Thêm sản phẩm
+                            </a>
+                        </div>
                     </c:if>
                 </div>
             </div>

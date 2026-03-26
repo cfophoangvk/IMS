@@ -136,7 +136,7 @@
                 <div class="bg-white rounded-2xl shadow-[0_2px_15px_-3px_rgba(6,81,237,0.08)] border border-gray-100 overflow-hidden">
                     <div class="px-6 py-5 border-b border-gray-100 bg-blue-50/50">
                         <h2 class="text-lg font-semibold text-gray-800">
-                            <i class="fas fa-layer-group text-blue-500 mr-2"></i>Top Sản phẩm Tồn Kho Cao
+                            <i class="fas fa-layer-group text-blue-500 mr-2"></i>Top vật tư dưới định mức
                         </h2>
                     </div>
                     <table class="w-full text-sm">
