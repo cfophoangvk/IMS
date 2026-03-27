@@ -34,19 +34,31 @@ public class DashboardServlet extends HttpServlet {
 
         switch (path) {
             case "/dashboard/it-admin":
-                if (user.getRoleId() != Constant.ROLE_IT_ADMIN) { response.sendRedirect(request.getContextPath() + "/dashboard/it-admin"); return; }
+                if (user.getRoleId() != Constant.ROLE_IT_ADMIN) {
+                    response.sendRedirect(request.getContextPath() + "/dashboard/it-admin");
+                    return;
+                }
                 handleITAdmin(request, response, dao);
                 break;
             case "/dashboard/system-admin":
-                if (user.getRoleId() != Constant.ROLE_SYSTEM_ADMIN) { response.sendRedirect(request.getContextPath() + "/dashboard/system-admin"); return; }
+                if (user.getRoleId() != Constant.ROLE_SYSTEM_ADMIN) {
+                    response.sendRedirect(request.getContextPath() + "/dashboard/system-admin");
+                    return;
+                }
                 handleSystemAdmin(request, response, dao);
                 break;
             case "/dashboard/manager":
-                if (user.getRoleId() != Constant.ROLE_MANAGER) { response.sendRedirect(request.getContextPath() + "/dashboard/manager"); return; }
+                if (user.getRoleId() != Constant.ROLE_MANAGER) {
+                    response.sendRedirect(request.getContextPath() + "/dashboard/manager");
+                    return;
+                }
                 handleManager(request, response, dao, user);
                 break;
             case "/dashboard/business-owner":
-                if (user.getRoleId() != Constant.ROLE_BUSINESS_OWNER) { response.sendRedirect(request.getContextPath() + "/dashboard/business-owner"); return; }
+                if (user.getRoleId() != Constant.ROLE_BUSINESS_OWNER) {
+                    response.sendRedirect(request.getContextPath() + "/dashboard/business-owner");
+                    return;
+                }
                 handleBusinessOwner(request, response, dao);
                 break;
         }

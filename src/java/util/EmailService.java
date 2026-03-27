@@ -14,7 +14,7 @@ public class EmailService {
             String SMTP_PORT = dotenv.get("SMTP_PORT");
             String SMTP_USERNAME = dotenv.get("SMTP_USERNAME");
             String SMTP_PASSWORD = dotenv.get("SMTP_PASSWORD");
-            
+
             Properties props = new Properties();
             props.put("mail.smtp.auth", "true");
             props.put("mail.smtp.starttls.enable", "true");
@@ -62,7 +62,9 @@ public class EmailService {
 
     public static boolean sendDailyClosingNotification(java.util.List<String> emails, String warehouseName,
             String closingDate, java.util.List<model.InventoryTransaction> transactions) {
-        if (emails == null || emails.isEmpty()) return true;
+        if (emails == null || emails.isEmpty()) {
+            return true;
+        }
         try {
             Dotenv dotenv = Dotenv.load();
             String SMTP_HOST = dotenv.get("SMTP_HOST");
@@ -89,22 +91,34 @@ public class EmailService {
             for (model.InventoryTransaction t : transactions) {
                 String typeName;
                 switch (t.getTransactionType()) {
-                    case 1: typeName = "Nhập - NCC"; break;
-                    case 2: typeName = "Xuất - NCC"; break;
-                    default: typeName = "Nội bộ"; break;
+                    case 1:
+                        typeName = "Nhập - NCC";
+                        break;
+                    case 2:
+                        typeName = "Xuất - NCC";
+                        break;
+                    default:
+                        typeName = "Nội bộ";
+                        break;
                 }
                 String status;
                 switch (t.getApprovalStatus()) {
-                    case 0: status = "Chờ duyệt"; break;
-                    case 1: status = "Đã duyệt"; break;
-                    default: status = "Từ chối"; break;
+                    case 0:
+                        status = "Chờ duyệt";
+                        break;
+                    case 1:
+                        status = "Đã duyệt";
+                        break;
+                    default:
+                        status = "Từ chối";
+                        break;
                 }
                 rows.append("<tr>")
-                    .append("<td style='padding:8px;border:1px solid #ddd;text-align:center;'>").append(idx++).append("</td>")
-                    .append("<td style='padding:8px;border:1px solid #ddd;'>").append(t.getTransactionCode()).append("</td>")
-                    .append("<td style='padding:8px;border:1px solid #ddd;text-align:center;'>").append(typeName).append("</td>")
-                    .append("<td style='padding:8px;border:1px solid #ddd;text-align:center;'>").append(status).append("</td>")
-                    .append("</tr>");
+                        .append("<td style='padding:8px;border:1px solid #ddd;text-align:center;'>").append(idx++).append("</td>")
+                        .append("<td style='padding:8px;border:1px solid #ddd;'>").append(t.getTransactionCode()).append("</td>")
+                        .append("<td style='padding:8px;border:1px solid #ddd;text-align:center;'>").append(typeName).append("</td>")
+                        .append("<td style='padding:8px;border:1px solid #ddd;text-align:center;'>").append(status).append("</td>")
+                        .append("</tr>");
             }
 
             String htmlContent = "<div style='font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto;'>"

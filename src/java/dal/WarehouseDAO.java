@@ -81,7 +81,7 @@ public class WarehouseDAO {
         }
         return null;
     }
-    
+
     public String getWarehouseNameById(int id) {
         String sql = "SELECT WarehouseName FROM Warehouses WHERE WarehouseId = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -96,7 +96,7 @@ public class WarehouseDAO {
         }
         return null;
     }
-    
+
     public int createWarehouse(Warehouse w) {
         String sql = "INSERT INTO Warehouses (WarehouseCode, WarehouseName, Location, Status, CreatedBy, CreatedDate) "
                 + "VALUES (?, ?, ?, 1, ?, GETDATE())";
@@ -175,7 +175,7 @@ public class WarehouseDAO {
         }
         return list;
     }
-    
+
     public List<User> getMembersByWarehouse(int warehouseId) {
         List<User> members = new ArrayList<>();
         String sql = "SELECT u.*, r.RoleName FROM Users u JOIN Roles r ON u.RoleId = r.RoleId WHERE u.WarehouseId = ?";
@@ -198,7 +198,7 @@ public class WarehouseDAO {
         }
         return members;
     }
-    
+
     public boolean isManagerInWarehouse(int warehouseId) {
         String sql = "SELECT 1 FROM Users WHERE WarehouseId = ? AND RoleId = 4";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

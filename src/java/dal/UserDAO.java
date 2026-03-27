@@ -66,28 +66,28 @@ public class UserDAO {
         String sql = "SELECT u.*, r.RoleName FROM Users u "
                 + "JOIN Roles r ON u.RoleId = r.RoleId "
                 + "WHERE (u.Username LIKE ? OR u.FullName LIKE ? OR u.Email LIKE ?) ";
-        
+
         if (roleId != null) {
             sql += "AND u.RoleId = ? ";
         }
-        
+
         sql += "ORDER BY u.UserId DESC "
-             + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
-             
+                + "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             String searchPattern = "%" + (search != null ? search.trim() : "") + "%";
             ps.setString(1, searchPattern);
             ps.setString(2, searchPattern);
             ps.setString(3, searchPattern);
-            
+
             int paramIndex = 4;
             if (roleId != null) {
                 ps.setInt(paramIndex++, roleId);
             }
-            
+
             ps.setInt(paramIndex++, (page - 1) * pageSize);
             ps.setInt(paramIndex, pageSize);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     users.add(mapResultSetToUser(rs));
@@ -102,21 +102,21 @@ public class UserDAO {
     public int getTotalUsers(String search, Integer roleId) {
         String sql = "SELECT COUNT(*) FROM Users u "
                 + "WHERE (u.Username LIKE ? OR u.FullName LIKE ? OR u.Email LIKE ?) ";
-                
+
         if (roleId != null) {
             sql += "AND u.RoleId = ? ";
         }
-        
+
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             String searchPattern = "%" + (search != null ? search.trim() : "") + "%";
             ps.setString(1, searchPattern);
             ps.setString(2, searchPattern);
             ps.setString(3, searchPattern);
-            
+
             if (roleId != null) {
                 ps.setInt(4, roleId);
             }
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);

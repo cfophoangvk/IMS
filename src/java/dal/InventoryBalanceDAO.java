@@ -27,10 +27,8 @@ public class InventoryBalanceDAO {
     }
 
     private boolean upsertBalance(int warehouseId, int productId, BigDecimal delta, int updatedBy) throws SQLException {
-        // Check if exists
         BigDecimal current = getBalance(warehouseId, productId);
         if (current == null) {
-            // INSERT
             String sql = "INSERT INTO InventoryBalances (WarehouseId, ProductId, Quantity, UpdatedBy, UpdatedDate) VALUES (?, ?, ?, ?, GETDATE())";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setInt(1, warehouseId);
@@ -40,7 +38,6 @@ public class InventoryBalanceDAO {
                 return ps.executeUpdate() > 0;
             }
         } else {
-            // UPDATE
             String sql = "UPDATE InventoryBalances SET Quantity = Quantity + ?, UpdatedBy = ?, UpdatedDate = GETDATE() WHERE WarehouseId = ? AND ProductId = ?";
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setBigDecimal(1, delta);
@@ -109,7 +106,6 @@ public class InventoryBalanceDAO {
         try {
             conn.setAutoCommit(false);
             for (TransactionDetail d : details) {
-                // Check balance at source
                 BigDecimal current = getBalance(fromWarehouseId, d.getProductId());
                 if (current == null || current.compareTo(d.getQuantity()) < 0) {
                     conn.rollback();

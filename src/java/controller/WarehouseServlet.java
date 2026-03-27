@@ -126,8 +126,10 @@ public class WarehouseServlet extends HttpServlet {
         String code = request.getParameter("warehouseCode").trim();
         String name = request.getParameter("warehouseName").trim();
         String location = request.getParameter("location").trim();
-        
-        if (location.isBlank()) location = null;
+
+        if (location.isBlank()) {
+            location = null;
+        }
 
         List<String> errors = validateWarehouse(code, name, 0);
 
@@ -175,8 +177,10 @@ public class WarehouseServlet extends HttpServlet {
         int id = Integer.parseInt(request.getParameter("warehouseId").trim());
         String name = request.getParameter("warehouseName").trim();
         String location = request.getParameter("location").trim();
-        
-        if (location.isBlank()) location = null;
+
+        if (location.isBlank()) {
+            location = null;
+        }
 
         List<String> errors = new ArrayList<>();
         if (!Validator.isValidWarehouseName(name)) {
@@ -257,7 +261,7 @@ public class WarehouseServlet extends HttpServlet {
 
         WarehouseDAO wdao = new WarehouseDAO();
         boolean includeManager = !wdao.isManagerInWarehouse(warehouseId);
-        
+
         List<User> availableUsers = wdao.getUsersNotInWarehouse(includeManager);
 
         request.setAttribute("warehouse", w);

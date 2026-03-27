@@ -188,7 +188,7 @@ public class ProductDAO {
         }
         return list;
     }
-    
+
     public String getProductCodeById(int productId) {
         String sql = "SELECT ProductCode FROM Products WHERE ProductId = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

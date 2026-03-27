@@ -28,7 +28,7 @@ public class RoleServlet extends HttpServlet {
         RoleDAO roleDAO = new RoleDAO();
         List<Role> roles = roleDAO.getAllRoles();
         request.setAttribute("roles", roles);
-        
+
         request.getRequestDispatcher("/views/role/list-role.jsp").forward(request, response);
     }
 
@@ -44,7 +44,7 @@ public class RoleServlet extends HttpServlet {
 
         String roleName = request.getParameter("roleName");
         String description = request.getParameter("description");
-        
+
         if (roleName == null || roleName.trim().isEmpty()) {
             redirect(response, request, "/role/list", null, "Tên vai trò không được để trống.");
             return;

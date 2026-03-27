@@ -239,14 +239,10 @@
                                         </td>
                                         <td class="px-5 py-3">
                                             <c:choose>
-                                                <c:when test="${t.transactionType == 1}"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Nhập (NCC)</span></c:when>
-                                                <c:when test="${t.transactionType == 2}"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Xuất (NCC)</span></c:when>
-                                                <c:when test="${t.transactionType == 3}">
-                                                    <c:choose>
-                                                        <c:when test="${t.toWarehouseId == sessionScope.account.warehouseId}"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Nhập (Nội bộ)</span></c:when>
-                                                        <c:otherwise><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Xuất (Nội bộ)</span></c:otherwise>
-                                                    </c:choose>
-                                                </c:when>
+                                                <c:when test="${t.transactionType == 1}"><span class="inline-flex px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Nhập (NCC)</span></c:when>
+                                                <c:when test="${t.transactionType == 2}"><span class="inline-flex px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Xuất (NCC)</span></c:when>
+                                                <c:when test="${t.transactionType == 3}"><span class="inline-flex px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Nhập (Nội bộ)</span></c:when>
+                                                <c:when test="${t.transactionType == 4}"><span class="inline-flex px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium border">Xuất (Nội bộ)</span></c:when>
                                             </c:choose>
                                         </td>
                                         <td class="px-5 py-3 text-gray-600 text-xs hidden sm:table-cell">${t.approvedByName}</td>

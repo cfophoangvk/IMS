@@ -245,22 +245,25 @@ public class TransactionServlet extends HttpServlet {
         if (isInternal && otherWh > 0 && otherWh == userWarehouseId) {
             errors.add("Kho chuyển phải khác kho hiện tại.");
         }
+        if (!isInternal && partnerId <= 0) {
+            errors.add("Vui lòng chọn nhà cung cấp.");
+        }
 
         int typeInt;
         int fromWh, toWh;
-        if (isImport && !isInternal) {
+        if (isImport && !isInternal) { // Nhập NCC
             typeInt = Constant.TX_IMPORT_SUPPLIER;
             fromWh = 0;
             toWh = userWarehouseId;
-        } else if (!isImport && !isInternal) {
+        } else if (!isImport && !isInternal) { // Xuất NCC
             typeInt = Constant.TX_EXPORT_SUPPLIER;
             fromWh = userWarehouseId;
             toWh = 0;
-        } else if (isImport && isInternal) {
+        } else if (isImport && isInternal) { // Nhập nội bộ
             typeInt = Constant.TX_IMPORT_INTERNAL;
             fromWh = otherWh;
             toWh = userWarehouseId;
-        } else {
+        } else { // Xuất nội bộ
             typeInt = Constant.TX_EXPORT_INTERNAL;
             fromWh = userWarehouseId;
             toWh = otherWh;

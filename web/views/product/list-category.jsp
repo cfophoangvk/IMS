@@ -68,7 +68,7 @@
                         <c:forEach var="cat" items="${categories}" varStatus="loop">
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 py-4 text-sm text-gray-500 text-center">${(currentPage-1)*10 + loop.index+1}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-900">${cat.categoryName}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900"><span class="line-clamp-1" title="${cat.categoryName}">${cat.categoryName}</span></td>
                                 <c:if test="${loggedUser.roleId == 2}">
                                     <td class="px-6 py-4 text-center"> 
                                         <c:choose>

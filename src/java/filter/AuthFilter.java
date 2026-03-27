@@ -15,11 +15,11 @@ public class AuthFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
+
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
         HttpSession session = req.getSession();
-        
+
         String path = req.getServletPath();
         if (path.startsWith("/assets/") || path.startsWith("/auth/") || path.equals("/index.jsp") || path.startsWith("/views/error/") || path.isEmpty()) {
             chain.doFilter(request, response);
@@ -27,7 +27,7 @@ public class AuthFilter implements Filter {
         }
 
         User user = (User) session.getAttribute(Constant.SESSION_ACCOUNT);
-        
+
         if (user == null) {
             res.sendRedirect(req.getContextPath() + "/auth/login");
             return;

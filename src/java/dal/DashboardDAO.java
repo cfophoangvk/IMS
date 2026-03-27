@@ -3,14 +3,10 @@ package dal;
 import util.DBContext;
 import java.sql.*;
 import java.util.*;
-import model.InventoryTransaction;
-import model.User;
 
 public class DashboardDAO {
 
     private final Connection conn = DBContext.getConnection();
-
-    // ===================== IT ADMIN =====================
 
     public int getTotalUsers() {
         return countQuery("SELECT COUNT(*) FROM Users");
@@ -34,8 +30,7 @@ public class DashboardDAO {
                 + "FROM Users u JOIN Roles r ON u.RoleId = r.RoleId "
                 + "WHERE u.WarehouseId IS NULL AND u.RoleId IN (3, 4) AND u.Status = 1 "
                 + "ORDER BY u.FullName";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("userId", rs.getInt("UserId"));
@@ -45,7 +40,9 @@ public class DashboardDAO {
                 m.put("roleName", rs.getString("RoleName"));
                 list.add(m);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -71,11 +68,11 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
-
-    // ===================== SYSTEM ADMIN =====================
 
     public int getTotalProducts() {
         return countQuery("SELECT COUNT(*) FROM Products WHERE Status = 1");
@@ -94,15 +91,16 @@ public class DashboardDAO {
         String sql = "SELECT c.CategoryName, COUNT(p.ProductId) AS ProductCount "
                 + "FROM Categories c LEFT JOIN Products p ON c.CategoryId = p.CategoryId AND p.Status = 1 "
                 + "WHERE c.Status = 1 GROUP BY c.CategoryName ORDER BY ProductCount DESC";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("categoryName", rs.getNString("CategoryName"));
                 m.put("productCount", rs.getInt("ProductCount"));
                 list.add(m);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -125,18 +123,21 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
-    // ===================== BUSINESS OWNER =====================
-
     public double getTotalStockQuantity() {
         String sql = "SELECT COALESCE(SUM(Quantity), 0) FROM InventoryBalances";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getDouble(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -145,10 +146,13 @@ public class DashboardDAO {
                 + "JOIN InventoryTransactions t ON td.TransactionId = t.TransactionId "
                 + "WHERE t.TransactionType IN (1, 3) AND t.ApprovalStatus = 1 AND t.Status = 1 "
                 + "AND MONTH(t.TransactionDate) = MONTH(GETDATE()) AND YEAR(t.TransactionDate) = YEAR(GETDATE())";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getDouble(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -157,10 +161,13 @@ public class DashboardDAO {
                 + "JOIN InventoryTransactions t ON td.TransactionId = t.TransactionId "
                 + "WHERE t.TransactionType IN (2, 4) AND t.ApprovalStatus = 1 AND t.Status = 1 "
                 + "AND MONTH(t.TransactionDate) = MONTH(GETDATE()) AND YEAR(t.TransactionDate) = YEAR(GETDATE())";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getDouble(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -169,15 +176,16 @@ public class DashboardDAO {
         String sql = "SELECT TOP 10 w.WarehouseName, COALESCE(SUM(ib.Quantity), 0) AS TotalStock "
                 + "FROM Warehouses w LEFT JOIN InventoryBalances ib ON w.WarehouseId = ib.WarehouseId "
                 + "WHERE w.Status = 1 GROUP BY w.WarehouseName ORDER BY TotalStock DESC";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Map<String, Object> m = new LinkedHashMap<>();
                 m.put("warehouseName", rs.getNString("WarehouseName"));
                 m.put("totalStock", rs.getDouble("TotalStock"));
                 list.add(m);
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -205,7 +213,9 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -229,7 +239,9 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -252,7 +264,9 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -261,16 +275,18 @@ public class DashboardDAO {
                 + "WHERE ApprovalStatus = 0 AND Status = 1 AND DATEDIFF(DAY, CreatedDate, GETDATE()) > 3");
     }
 
-    // ===================== MANAGER (Warehouse Scoped) =====================
-
     public double getWarehouseStock(int warehouseId) {
         String sql = "SELECT COALESCE(SUM(Quantity), 0) FROM InventoryBalances WHERE WarehouseId = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, warehouseId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getDouble(1);
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -282,9 +298,13 @@ public class DashboardDAO {
             ps.setInt(1, warehouseId);
             ps.setInt(2, warehouseId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -297,9 +317,13 @@ public class DashboardDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, warehouseId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getDouble(1);
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -312,9 +336,13 @@ public class DashboardDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, warehouseId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getDouble(1);
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 
@@ -324,9 +352,13 @@ public class DashboardDAO {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, warehouseId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1) > 0;
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -348,7 +380,9 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -367,7 +401,9 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -397,7 +433,9 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
@@ -428,17 +466,20 @@ public class DashboardDAO {
                     list.add(m);
                 }
             }
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return list;
     }
 
-    // ===================== UTILITY =====================
-
     private int countQuery(String sql) {
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) return rs.getInt(1);
-        } catch (Exception e) { e.printStackTrace(); }
+        try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return 0;
     }
 }

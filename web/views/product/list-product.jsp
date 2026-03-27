@@ -80,17 +80,17 @@
                                 <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase text-center">Danh mục</th>
                                 <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase text-center">Đơn vị</th>
                                 <c:if test="${u.roleId == 2 or u.roleId == 4}"><th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase text-center">Trạng thái</th></c:if>
-                                <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase text-center">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
+                                    <th class="px-6 py-3 text-xs font-semibold text-gray-500 uppercase text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
                             <c:forEach var="p" items="${products}" varStatus="loop">
                                 <tr class="hover:bg-gray-50 transition">
                                     <td class="px-4 py-4 text-sm text-gray-500 text-center">${(currentPage-1)*10+loop.index+1}</td>
                                     <td class="px-6 py-4 text-center">
                                         <span class="font-mono text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded">${p.productCode}</span>
                                     </td>
-                                    <td class="px-6 py-4 text-sm font-medium text-gray-900">${p.productName}</td>
+                                    <td class="px-6 py-4 text-sm font-medium text-gray-900"><span class="line-clamp-1" title="${p.productName}">${p.productName}</span></td>
                                     <td class="px-6 py-4 text-center">
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">${p.categoryName}</span>
                                     </td>

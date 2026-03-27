@@ -12,7 +12,7 @@ public class DBContext {
         String url = dotenv.get("DB_URL");
         String user = dotenv.get("DB_USER");
         String pass = dotenv.get("DB_PASS");
-        
+
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             con = DriverManager.getConnection(url, user, pass);

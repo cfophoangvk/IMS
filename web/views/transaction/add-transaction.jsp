@@ -54,8 +54,8 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nguồn giao dịch <span class="text-red-500">*</span></label>
                             <div class="flex gap-4">
-                                <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 border rounded-lg transition ${source == 'supplier' || empty source ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}" id="supplierLabel">
-                                    <input type="radio" name="source" value="supplier" ${source == 'supplier' || empty source ? 'checked' : ''} class="text-blue-600" required>
+                                <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 border rounded-lg transition ${source == 'supplier' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}" id="supplierLabel">
+                                    <input type="radio" name="source" value="supplier" ${source == 'supplier' ? 'checked' : ''} class="text-blue-600" required>
                                     <span class="text-sm font-medium">Nhà cung cấp</span>
                                 </label>
                                 <label class="flex items-center gap-2 cursor-pointer px-4 py-2.5 border rounded-lg transition ${source == 'internal' ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}" id="internalLabel">
@@ -72,8 +72,7 @@
 
                         <div id="otherWarehouseGroup" style="display:none;">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Chọn kho <span class="text-red-500">*</span></label>
-                            <select name="otherWarehouseId" id="otherWarehouseId"
-                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <select name="otherWarehouseId" id="otherWarehouseId" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                                 <option value="">-- Chọn kho --</option>
                                 <c:forEach var="w" items="${warehouses}">
                                     <c:if test="${w.warehouseId != userWarehouseId}">
@@ -82,9 +81,9 @@
                                 </c:forEach>
                             </select>
                         </div>
-                        <div class="col-span-full">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Đối tác</label>
-                            <select name="partnerId" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        <div id="partnerGroup">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Chọn đối tác <span class="text-red-500">*</span></label>
+                            <select name="partnerId" id="partnerId" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                                 <option value="">-- Chọn đối tác --</option>
                                 <c:forEach var="entry" items="${partnerList}">
                                     <option value="${entry.key}" ${partnerId == entry.key ? 'selected' : ''}>${entry.value}</option>
@@ -175,11 +174,17 @@
         function updateSourceVisibility () {
             let source = document.querySelector('input[name="source"]:checked');
             let otherWhGroup = document.getElementById('otherWarehouseGroup');
+            let partnerGroup = document.getElementById('partnerGroup');
             if (source && source.value === 'internal') {
                 otherWhGroup.style.display = '';
+                if (partnerGroup) {
+                    partnerGroup.style.display = 'none';
+                    document.getElementById('partnerId').value = '';
+                }
             } else {
                 otherWhGroup.style.display = 'none';
                 document.getElementById('otherWarehouseId').value = '';
+                if (partnerGroup) partnerGroup.style.display = '';
             }
         }
 
