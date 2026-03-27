@@ -1,0 +1,33 @@
+services:
+  sqlserver-db:
+    build: ./sqlserver
+    image: ims_sqlserver
+    container_name: sqlserver_ahihi
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Cfopanyaforger*
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - app-network
+
+  webapp:
+    build: . # Build từ Dockerfile ở thư mục hiện tại
+    image: ims_webapp
+    container_name: inventory_ahihi
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./.env:/usr/local/tomcat/.env
+    networks:
+      - app-network
+
+volumes:
+  sqlserver-data:
+
+networks:
+  app-network:
+    driver: bridge
