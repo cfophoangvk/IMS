@@ -1,23 +1,23 @@
 services:
   sqlserver-db:
-    build: ./sqlserver
-    image: ims_sqlserver
-    container_name: sqlserver_ahihi
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ims_sqlserver
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=Cfopanyaforger*
+      - SA_PASSWORD=${DB_PASS}
       - MSSQL_PID=Express
     ports:
       - "1433:1433"
     volumes:
       - sqlserver-data:/var/opt/mssql
+      - ./script.sql:/script.sql
     networks:
       - app-network
 
   webapp:
     build: . # Build từ Dockerfile ở thư mục hiện tại
     image: ims_webapp
-    container_name: inventory_ahihi
+    container_name: ims_webapp
     ports:
       - "8080:8080"
     volumes:
